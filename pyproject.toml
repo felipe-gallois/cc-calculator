@@ -1,0 +1,27 @@
+[project]
+name = "cc-calculator"
+version = "0.1.0"
+description = "A country centrality calculator program"
+authors = [
+    {name = "Felipe Gallois",email = "fgallois@inf.ufrgs.br"}
+]
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+]
+
+[tool.poetry]
+packages = [{include = "cc_calculator", from = "src"}]
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+cccalc = "cc_calculator.main:main"
+
+
+[dependency-groups]
+dev = [
+    "pytest (>=9.0.2,<10.0.0)"
+]

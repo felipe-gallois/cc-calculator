@@ -23,58 +23,57 @@ REGULAR_IPV4_PREFIX = IPv4Network("132.219.153.0/24")
 
 
 def test_create_ipv4collector():
+    IPv4Collector()
+
+
+def test_collection_find_no_ip():
     src = StringIO()
-    IPv4Collector(src)
+    collector = IPv4Collector()
 
-
-def test_ipv4collector_find_no_ip():
-    src = StringIO()
-    collector = IPv4Collector(src)
-
-    prefixes = collector.collect_prefixes()
+    prefixes = collector._collect_prefixes(src)
 
     assert len(prefixes) == 0
 
 
-def test_ipv4collector_find_one_ip():
+def test_collection_find_one_ip():
     src = StringIO(REGULAR_IPV4_INPUT)
-    collector = IPv4Collector(src)
+    collector = IPv4Collector()
 
-    prefixes = collector.collect_prefixes()
+    prefixes = collector._collect_prefixes(src)
 
     assert len(prefixes) == 1
 
 
-def test_ipv4collector_list_one_ip():
+def test_collection_list_one_ip():
     src = StringIO(REGULAR_IPV4_INPUT)
-    collector = IPv4Collector(src)
+    collector = IPv4Collector()
 
-    prefixes = collector.collect_prefixes()
+    prefixes = collector._collect_prefixes(src)
 
     assert REGULAR_IPV4_PREFIX in prefixes
 
 
-def test_ipv4collector_ignore_trailing_new_line():
+def test_collection_ignore_trailing_new_line():
     src = StringIO("\n")
-    collector = IPv4Collector(src)
+    collector = IPv4Collector()
 
-    prefixes = collector.collect_prefixes()
+    prefixes = collector._collect_prefixes(src)
 
     assert len(prefixes) == 0
 
 
-def test_ipv4collector_same_prefix_return_once():
+def test_collection_same_prefix_return_once():
     src = StringIO(REGULAR_MULTILINE_IPV4_INPUT)
-    collector = IPv4Collector(src)
+    collector = IPv4Collector()
 
-    prefixes = collector.collect_prefixes()
+    prefixes = collector._collect_prefixes(src)
 
     assert REGULAR_IPV4_PREFIX in prefixes
 
 
-def test_ipv4collector_raise_invalid_prefix():
+def test_collection_raise_invalid_prefix():
     src = StringIO(INVALID_IPV4_INPUT)
-    collector = IPv4Collector(src)
+    collector = IPv4Collector()
 
     with pytest.raises(ValueError):
-        collector.collect_prefixes()
+        collector._collect_prefixes(src)

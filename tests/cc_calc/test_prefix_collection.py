@@ -1,4 +1,6 @@
-from io import StringIO
+import bz2
+
+from io import BytesIO, StringIO
 from ipaddress import IPv4Network
 
 import pytest
@@ -20,6 +22,10 @@ REGULAR_MULTILINE_IPV4_INPUT = (
 )
 
 REGULAR_IPV4_PREFIX = IPv4Network("132.219.153.0/24")
+
+REGULAR_BYTE_IPV4_INPUT = (
+    b"ripe/rrc00|5 20205|6939|376 132.219.153.0/24 i 64.246.96.5\n"
+)
 
 
 def test_create_ipv4collector():
@@ -77,3 +83,13 @@ def test_collection_raise_invalid_prefix():
 
     with pytest.raises(ValueError):
         collector._collect_prefixes(src)
+
+
+def test_decompression_list_one_ip():
+    compressed = bz2.compress(REGULAR_BYTE_IPV4_INPUT)
+    src = BytesIO(compressed)
+    collector = IPv4Collector()
+
+    prefixes = collector.collect_compressed(src)
+
+    assert REGULAR_IPV4_PREFIX in prefixes

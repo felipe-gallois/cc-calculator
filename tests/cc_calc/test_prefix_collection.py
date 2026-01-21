@@ -28,11 +28,11 @@ REGULAR_BYTE_IPV4_INPUT = (
 )
 
 
-def test_create_ipv4collector():
+def test_create_ipv4collector() -> None:
     IPv4Collector()
 
 
-def test_collection_find_no_ip():
+def test_collection_find_no_ip() -> None:
     src = StringIO()
     collector = IPv4Collector()
 
@@ -41,7 +41,7 @@ def test_collection_find_no_ip():
     assert len(prefixes) == 0
 
 
-def test_collection_find_one_ip():
+def test_collection_find_one_ip() -> None:
     src = StringIO(REGULAR_IPV4_INPUT)
     collector = IPv4Collector()
 
@@ -50,7 +50,7 @@ def test_collection_find_one_ip():
     assert len(prefixes) == 1
 
 
-def test_collection_list_one_ip():
+def test_collection_list_one_ip() -> None:
     src = StringIO(REGULAR_IPV4_INPUT)
     collector = IPv4Collector()
 
@@ -59,7 +59,7 @@ def test_collection_list_one_ip():
     assert REGULAR_IPV4_PREFIX in prefixes
 
 
-def test_collection_ignore_trailing_new_line():
+def test_collection_ignore_trailing_new_line() -> None:
     src = StringIO("\n")
     collector = IPv4Collector()
 
@@ -68,7 +68,7 @@ def test_collection_ignore_trailing_new_line():
     assert len(prefixes) == 0
 
 
-def test_collection_same_prefix_return_once():
+def test_collection_same_prefix_return_once() -> None:
     src = StringIO(REGULAR_MULTILINE_IPV4_INPUT)
     collector = IPv4Collector()
 
@@ -77,7 +77,7 @@ def test_collection_same_prefix_return_once():
     assert REGULAR_IPV4_PREFIX in prefixes
 
 
-def test_collection_raise_invalid_prefix():
+def test_collection_raise_invalid_prefix() -> None:
     src = StringIO(INVALID_IPV4_INPUT)
     collector = IPv4Collector()
 
@@ -85,7 +85,7 @@ def test_collection_raise_invalid_prefix():
         collector._collect_prefixes(src)
 
 
-def test_decompression_list_one_ip():
+def test_decompression_list_one_ip() -> None:
     compressed = bz2.compress(REGULAR_BYTE_IPV4_INPUT)
     src = BytesIO(compressed)
     collector = IPv4Collector()

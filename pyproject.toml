@@ -5,12 +5,15 @@ description = "A country centrality calculator program"
 authors = ["Felipe Gallois <fgallois@inf.ufrgs.br>"]
 readme = "README.md"
 packages = [{ include = "cc_calc", from = "src" }]
+include = ["cc_calc/py.typed"]
 
 [tool.poetry.dependencies]
 python = ">=3.14"
+geoip2 = "^5.2.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^9.0.2"
+mypy = "^1.19.1"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

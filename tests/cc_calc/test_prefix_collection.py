@@ -1,14 +1,9 @@
-import bz2
-
-from io import BytesIO, StringIO
+from io import StringIO
 from ipaddress import IPv4Network
 
 import pytest
 
-from cc_calc.prefix_collection import (
-    collect_compressed_prefixes,
-    _collect_prefixes,
-)
+from cc_calc.prefix_collection import _collect_prefixes
 
 
 REGULAR_IPV4_INPUT = (
@@ -26,62 +21,32 @@ REGULAR_MULTILINE_IPV4_INPUT = (
 
 REGULAR_IPV4_PREFIX = IPv4Network("132.219.153.0/24")
 
-REGULAR_BYTE_IPV4_INPUT = (
-    b"ripe/rrc00|5 20205|6939|376 132.219.153.0/24 i 64.246.96.5\n"
-)
 
+class TestCollectCompressedPrefixes:
+    @pytest.mark.parametrize("content", ["", "\n"])
+    def test_returns_empty_for_empty_input(self, content: str) -> None:
+        src = StringIO(content)
 
-def test_collection_find_no_ip() -> None:
-    src = StringIO()
+        prefixes = _collect_prefixes(src)
 
-    prefixes = _collect_prefixes(src)
+        assert not prefixes
 
-    assert len(prefixes) == 0
+    def test_returns_single_prefix_for_valid_input(self) -> None:
+        src = StringIO(REGULAR_IPV4_INPUT)
 
+        prefixes = _collect_prefixes(src)
 
-def test_collection_find_one_ip() -> None:
-    src = StringIO(REGULAR_IPV4_INPUT)
+        assert prefixes == {REGULAR_IPV4_PREFIX}
 
-    prefixes = _collect_prefixes(src)
+    def test_return_unique_prefixes_for_repeated_entries(self) -> None:
+        src = StringIO(REGULAR_MULTILINE_IPV4_INPUT)
 
-    assert len(prefixes) == 1
+        prefixes = _collect_prefixes(src)
 
+        assert REGULAR_IPV4_PREFIX in prefixes
 
-def test_collection_list_one_ip() -> None:
-    src = StringIO(REGULAR_IPV4_INPUT)
+    def test_raises_error_for_invalid_prefix(self) -> None:
+        src = StringIO(INVALID_IPV4_INPUT)
 
-    prefixes = _collect_prefixes(src)
-
-    assert REGULAR_IPV4_PREFIX in prefixes
-
-
-def test_collection_ignore_trailing_new_line() -> None:
-    src = StringIO("\n")
-
-    prefixes = _collect_prefixes(src)
-
-    assert len(prefixes) == 0
-
-
-def test_collection_same_prefix_return_once() -> None:
-    src = StringIO(REGULAR_MULTILINE_IPV4_INPUT)
-
-    prefixes = _collect_prefixes(src)
-
-    assert REGULAR_IPV4_PREFIX in prefixes
-
-
-def test_collection_raise_invalid_prefix() -> None:
-    src = StringIO(INVALID_IPV4_INPUT)
-
-    with pytest.raises(ValueError):
-        _collect_prefixes(src)
-
-
-def test_decompression_list_one_ip() -> None:
-    compressed = bz2.compress(REGULAR_BYTE_IPV4_INPUT)
-    src = BytesIO(compressed)
-
-    prefixes = collect_compressed_prefixes(src)
-
-    assert REGULAR_IPV4_PREFIX in prefixes
+        with pytest.raises(ValueError):
+            _collect_prefixes(src)

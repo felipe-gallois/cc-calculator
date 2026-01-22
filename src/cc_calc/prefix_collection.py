@@ -1,12 +1,13 @@
 import bz2
 import re
 
-from typing import BinaryIO, TextIO
 from ipaddress import IPv4Network
+from os import PathLike
+from typing import TextIO
 
 
-def collect_compressed_prefixes(source: BinaryIO) -> set[IPv4Network]:
-    with bz2.open(source, mode="rt", encoding="utf-8") as text:
+def collect_compressed_prefixes(path: str | PathLike[str]) -> set[IPv4Network]:
+    with bz2.open(path, mode="rt", encoding="utf-8") as text:
         return _collect_prefixes(text)
 
 

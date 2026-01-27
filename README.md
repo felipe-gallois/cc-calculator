@@ -32,6 +32,7 @@ The dependencies include tools to assist in testing and code analysis:
 - `pytest`: a testing framework
 
 > **Tip:** You can configure your IDE to automate the use of these tools or use some of them as language servers to provide live code insights. 
+
 > **Tip:** Because these tools are installed in the virtual environment, you have to call them through Poetry (`poetry run ...`)
 
 Before submitting code to this repository, run all tests and check linting and formatting rules:

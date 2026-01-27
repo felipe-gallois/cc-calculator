@@ -1,6 +1,5 @@
 import bz2
 import re
-
 from ipaddress import IPv4Network
 from os import PathLike
 from typing import TextIO

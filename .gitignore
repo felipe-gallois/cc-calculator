@@ -1,5 +1,11 @@
+# Editor config
+.nvim.lua
+
+# IO
+data/
+
+# Cache
+.ruff_cache/
 .mypy_cache/
 .pytest_cache/
 __pycache__/
-
-data/

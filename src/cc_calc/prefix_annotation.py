@@ -10,8 +10,8 @@ Country: TypeAlias = str
 
 
 def get_prefixes_asns(
-        prefixes: Iterable[IPv4Network],
-        as_file: str | PathLike[str],
+    prefixes: Iterable[IPv4Network],
+    as_file: str | PathLike[str],
 ) -> dict[IPv4Network, ASN | None]:
     with Reader(as_file) as reader:
         return {
@@ -21,8 +21,7 @@ def get_prefixes_asns(
 
 
 def get_prefixes_countries(
-        prefixes: Iterable[IPv4Network],
-        countries_file: str | PathLike[str]
+    prefixes: Iterable[IPv4Network], countries_file: str | PathLike[str]
 ) -> dict[IPv4Network, Country | None]:
     with Reader(countries_file) as reader:
         return {

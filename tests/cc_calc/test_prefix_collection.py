@@ -5,14 +5,9 @@ import pytest
 
 from cc_calc.prefix_collection import _collect_prefixes
 
+REGULAR_IPV4_INPUT = "ripe/rrc00|5 20205|6939|376 132.219.153.0/24 i 64.246.96.5\n"
 
-REGULAR_IPV4_INPUT = (
-    "ripe/rrc00|5 20205|6939|376 132.219.153.0/24 i 64.246.96.5\n"
-)
-
-INVALID_IPV4_INPUT = (
-    "ripe/rrc00|5 20205|6939|376 132.919.153.0/24 i 64.246.96.5\n"
-)
+INVALID_IPV4_INPUT = "ripe/rrc00|5 20205|6939|376 132.919.153.0/24 i 64.246.96.5\n"
 
 REGULAR_MULTILINE_IPV4_INPUT = (
     "ripe/rrc00|5 20205|6939|376 132.219.153.0/24 i 64.246.96.5\n"

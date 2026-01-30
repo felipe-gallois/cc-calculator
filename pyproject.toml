@@ -8,13 +8,15 @@ packages = [{ include = "cc_calc", from = "src" }]
 include = ["cc_calc/py.typed"]
 
 [tool.poetry.dependencies]
-python = ">=3.14"
+python = "~3.14.2"
 geoip2 = "^5.2.0"
+networkx = "^3.6.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.14.14"
 mypy = "^1.19.1"
 pytest = "^9.0.2"
+types-networkx = "^3.6.1.20251220"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

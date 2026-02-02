@@ -2,7 +2,7 @@ from io import StringIO
 
 import pytest
 
-from cc_calc.as_graph import CaidaRelLoader
+from cc_calc.rel_loading import CaidaRelLoader
 
 SINGLE_REGULAR_P2P_INPUT = "12|12345|0|bgp"
 

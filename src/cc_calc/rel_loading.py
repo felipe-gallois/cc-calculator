@@ -1,3 +1,5 @@
+"""Loading of autonomous systems' relationships."""
+
 import bz2
 from os import PathLike
 from typing import TextIO
@@ -6,15 +8,36 @@ import networkx as nx
 
 
 class ASRelGraph:
+    """A wrapper for a digraph of autonomous systems and relationship types."""
+
     def __init__(self, digraph: nx.DiGraph[str]) -> None:
+        """Initializes the wrapper.
+
+        Args:
+            digraph: The internal digraph.
+        """
         self._digraph = digraph
 
 
 class CaidaRelLoader:
+    """Autonomous system relationship loader for the CAIDA AS Relationships Dataset."""
+
     def __init__(self, path: str | PathLike[str]) -> None:
+        """Initializes the loader.
+
+        Args:
+            path: A path to the file containing the relationships.
+        """
         self._path = path
 
     def load_rel_graph(self) -> ASRelGraph:
+        """Loads autonomous system relationships from CAIDA's dataset.
+
+        Returns:
+            An ASRelGraph instance, representing a digraph in which nodes are autonomous
+            systems and arcs are relationships. The arcs are annotated with the type of
+            the relationship.
+        """
         with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
             digraph = self._build_graph(text)
             return ASRelGraph(digraph)

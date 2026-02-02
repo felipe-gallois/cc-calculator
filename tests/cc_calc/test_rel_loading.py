@@ -10,9 +10,9 @@ class TestLoadCaidaRels:
     def test_loads_no_ases_for_empty_input(self, input: str) -> None:
         src = StringIO(input)
 
-        relationships = CaidaRelLoader._build_graph(src)
+        graph = CaidaRelLoader._build_graph(src)
 
-        assert not relationships.nodes
+        assert not graph.nodes
 
     @pytest.mark.parametrize(
         "input, peers",
@@ -27,12 +27,12 @@ class TestLoadCaidaRels:
             ),
         ],
     )
-    def test_loads_ases_from_announcement(self, input: str, peers: set[str]) -> None:
+    def test_loads_ases_from_announcements(self, input: str, peers: set[str]) -> None:
         src = StringIO(input)
 
-        relationships = CaidaRelLoader._build_graph(src)
+        graph = CaidaRelLoader._build_graph(src)
 
-        assert set(relationships.nodes) == peers
+        assert set(graph.nodes) == peers
 
     @pytest.mark.parametrize(
         "input, rels",
@@ -52,6 +52,6 @@ class TestLoadCaidaRels:
     ) -> None:
         src = StringIO(input)
 
-        relationships = CaidaRelLoader._build_graph(src)
+        graph = CaidaRelLoader._build_graph(src)
 
-        assert set(relationships.edges(data="type")) == rels
+        assert set(graph.edges(data="type")) == rels

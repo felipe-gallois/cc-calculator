@@ -1,21 +1,23 @@
 import bz2
 from os import PathLike
-from typing import Protocol, TextIO
+from typing import TextIO
 
 import networkx as nx
 
 
-class ASRelLoader(Protocol):
-    def load_rel_graph(self) -> nx.DiGraph[str]: ...
+class ASRelGraph:
+    def __init__(self, digraph: nx.DiGraph[str]) -> None:
+        self._digraph = digraph
 
 
 class CaidaRelLoader:
     def __init__(self, path: str | PathLike[str]) -> None:
         self._path = path
 
-    def load_rel_graph(self) -> nx.DiGraph[str]:
+    def load_rel_graph(self) -> ASRelGraph:
         with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
-            return self._build_graph(text)
+            digraph = self._build_graph(text)
+            return ASRelGraph(digraph)
 
     @staticmethod
     def _build_graph(source: TextIO) -> nx.DiGraph[str]:

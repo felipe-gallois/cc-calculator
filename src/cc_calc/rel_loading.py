@@ -2,15 +2,17 @@
 
 import bz2
 from os import PathLike
-from typing import TextIO
+from typing import Any, Iterable, TextIO
 
 import networkx as nx
+
+type AS = str
 
 
 class ASRelGraph:
     """A wrapper for a digraph of autonomous systems and relationship types."""
 
-    def __init__(self, digraph: nx.DiGraph[str]) -> None:
+    def __init__(self, digraph: nx.DiGraph[AS]) -> None:
         """Initializes the wrapper.
 
         Args:
@@ -18,17 +20,24 @@ class ASRelGraph:
         """
         self._digraph = digraph
 
-    def bgp_receivers_from_as(self, asn: str, prev_asn: str | None) -> set[str]:
-        successors = self._digraph.successors(asn)
+    def bgp_receivers_from_as(
+        self, curr_as: str | AS, prev_as: str | AS | None = None
+    ) -> set[AS]:
+        succ = self._successors(curr_as)
 
-        if not prev_asn:
-            return set(successors)
+        if not prev_as:
+            return succ
 
-        prev_as_rel = self._digraph.edges[(prev_asn, asn)]["type"]
-        if prev_as_rel == "customer":
-            return set(successors)
+        if self._as_rel(prev_as, curr_as) == "customer":
+            return succ
 
-        return {succ for succ in successors if self._digraph.edges[(asn, succ)]["type"] == "customer"}
+        return {s for s in succ if self._as_rel(curr_as, s) == "customer"}
+
+    def _successors(self, as_: AS) -> set[AS]:
+        return set(self._digraph.successors(as_))
+
+    def _as_rel(self, src_as: AS, dst_as: AS) -> Any:
+        return self._digraph.edges[(src_as, dst_as)]["type"]
 
 
 class CaidaRelLoader:
@@ -55,28 +64,28 @@ class CaidaRelLoader:
             return ASRelGraph(digraph)
 
     @staticmethod
-    def _build_graph(source: TextIO) -> nx.DiGraph[str]:
+    def _build_graph(source: TextIO) -> nx.DiGraph[AS]:
         rel_graph = CaidaRelLoader._create_digraph()
 
         for line in source:
             tokens = CaidaRelLoader._tokenize(line)
 
             if tokens:
-                asns = tokens[0:2]
+                ases = (tokens[0], tokens[1])
                 rel_type = tokens[2]
 
-                CaidaRelLoader._add_nodes(asns, rel_graph)
-                CaidaRelLoader._add_edges(asns, rel_graph)
+                CaidaRelLoader._add_nodes(ases, rel_graph)
+                CaidaRelLoader._add_edges(ases, rel_graph)
 
                 if CaidaRelLoader._is_p2p(rel_type):
-                    CaidaRelLoader._annotate_p2p_edges(asns, rel_graph)
+                    CaidaRelLoader._annotate_p2p_edges(ases, rel_graph)
                 else:
-                    CaidaRelLoader._annotate_p2c_edges(asns, rel_graph)
+                    CaidaRelLoader._annotate_p2c_edges(ases, rel_graph)
 
         return rel_graph
 
     @staticmethod
-    def _create_digraph() -> nx.DiGraph[str]:
+    def _create_digraph() -> nx.DiGraph[AS]:
         return nx.DiGraph()
 
     @staticmethod
@@ -88,24 +97,24 @@ class CaidaRelLoader:
         return splits[0:3] if len(splits) > 2 else []
 
     @staticmethod
-    def _add_nodes(asns: list[str], graph: nx.DiGraph[str]) -> None:
-        graph.add_nodes_from(asns)
+    def _add_nodes(ases: Iterable[AS], graph: nx.DiGraph[AS]) -> None:
+        graph.add_nodes_from(ases)
 
     @staticmethod
-    def _add_edges(asns: list[str], graph: nx.DiGraph[str]) -> None:
-        graph.add_edge(asns[0], asns[1])
-        graph.add_edge(asns[1], asns[0])
+    def _add_edges(ases: tuple[AS, AS], graph: nx.DiGraph[AS]) -> None:
+        graph.add_edge(ases[0], ases[1])
+        graph.add_edge(ases[1], ases[0])
 
     @staticmethod
     def _is_p2p(rel_code: str) -> bool:
         return rel_code == "0"
 
     @staticmethod
-    def _annotate_p2p_edges(asns: list[str], graph: nx.DiGraph[str]) -> None:
-        graph.edges[(asns[0], asns[1])]["type"] = "peer"
-        graph.edges[(asns[1], asns[0])]["type"] = "peer"
+    def _annotate_p2p_edges(ases: tuple[AS, AS], graph: nx.DiGraph[AS]) -> None:
+        graph.edges[(ases[0], ases[1])]["type"] = "peer"
+        graph.edges[(ases[1], ases[0])]["type"] = "peer"
 
     @staticmethod
-    def _annotate_p2c_edges(asns: list[str], graph: nx.DiGraph[str]) -> None:
-        graph.edges[(asns[0], asns[1])]["type"] = "provider"
-        graph.edges[(asns[1], asns[0])]["type"] = "custumer"
+    def _annotate_p2c_edges(ases: tuple[AS, AS], graph: nx.DiGraph[AS]) -> None:
+        graph.edges[(ases[0], ases[1])]["type"] = "provider"
+        graph.edges[(ases[1], ases[0])]["type"] = "custumer"

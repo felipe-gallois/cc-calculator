@@ -3,7 +3,7 @@ from io import StringIO
 import networkx as nx
 import pytest
 
-from cc_calc.rel_loading import ASRelGraph, CaidaRelLoader
+from cc_calc.rel_loading import AS, ASRelGraph, CaidaRelLoader
 
 
 class TestListPathReceivers:
@@ -15,11 +15,11 @@ class TestListPathReceivers:
         ],
     )
     def test_when_originates_new_path_propagate_to_all(
-        self, topology: list[str, str, dict[str, str]], receivers: set[str]
+        self, topology: list[tuple[AS, AS, dict[str, str]]], receivers: set[AS]
     ) -> None:
         graph = ASRelGraph(nx.DiGraph(topology))
 
-        assert graph.bgp_receivers_from_as("1", None) == receivers
+        assert graph.bgp_receivers_from_as("1") == receivers
 
     @pytest.mark.parametrize(
         "topology, receivers",
@@ -30,11 +30,11 @@ class TestListPathReceivers:
         ],
     )
     def test_when_receives_prefix_from_third_party_propagate_according_to_valley_free(
-        self, topology: list[str, str, dict[str, str]], receivers: set[str]
+        self, topology: list[tuple[AS, AS, dict[str, str]]], receivers: set[AS]
     ) -> None:
         graph = ASRelGraph(nx.DiGraph(topology))
 
-        assert graph.bgp_receivers_from_as("2", "1") == receivers
+        assert graph.bgp_receivers_from_as("2", prev_as="1") == receivers
 
 
 class TestLoadCaidaRels:
@@ -59,7 +59,7 @@ class TestLoadCaidaRels:
             ),
         ],
     )
-    def test_loads_ases_from_announcements(self, input: str, peers: set[str]) -> None:
+    def test_loads_ases_from_announcements(self, input: str, peers: set[AS]) -> None:
         src = StringIO(input)
 
         graph = CaidaRelLoader._build_graph(src)
@@ -80,7 +80,7 @@ class TestLoadCaidaRels:
         ],
     )
     def test_loads_rels_from_announcements(
-        self, input: str, rels: set[tuple[str, str, str]]
+        self, input: str, rels: set[tuple[AS, AS, str]]
     ) -> None:
         src = StringIO(input)
 

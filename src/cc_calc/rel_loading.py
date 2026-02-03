@@ -23,6 +23,17 @@ class ASRelGraph:
     def bgp_receivers_from_as(
         self, curr_as: str | AS, prev_as: str | AS | None = None
     ) -> set[AS]:
+        """Collects ASes that receive BGP path announcements from an AS.
+
+        The ASes are collected according to the valley-free rule.
+
+        Args:
+            curr_as: The AS whose neighbors are being collected.
+            prev_as: The AS that announced the path to curr_as (necessary to calculate
+                     the valley-free rule).
+
+        Returns: A set of autonomous systems.
+        """
         succ = self._successors(curr_as)
 
         if not prev_as:

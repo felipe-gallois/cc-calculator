@@ -18,6 +18,18 @@ class ASRelGraph:
         """
         self._digraph = digraph
 
+    def bgp_receivers_from_as(self, asn: str, prev_asn: str | None) -> set[str]:
+        successors = self._digraph.successors(asn)
+
+        if not prev_asn:
+            return set(successors)
+
+        prev_as_rel = self._digraph.edges[(prev_asn, asn)]["type"]
+        if prev_as_rel == "customer":
+            return set(successors)
+
+        return {succ for succ in successors if self._digraph.edges[(asn, succ)]["type"] == "customer"}
+
 
 class CaidaRelLoader:
     """Autonomous system relationship loader for the CAIDA AS Relationships Dataset."""

@@ -16,7 +16,7 @@ from cc_calc.bgp_simulation import (
 
 
 class NetworkXRelGraph(ASRelGraph):
-    """A wrapper for a digraph of autonomous systems and relationship types."""
+    """A wrapper for a NetworkX digraph of autonomous systems and relationship types."""
 
     def __init__(self, digraph: nx.DiGraph[AS]) -> None:
         """Initializes the wrapper.

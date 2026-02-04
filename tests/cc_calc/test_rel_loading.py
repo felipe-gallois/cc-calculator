@@ -3,11 +3,17 @@ from io import StringIO
 import networkx as nx
 import pytest
 
-from cc_calc.bgp_simulation import AS
+from cc_calc.bgp_simulation import AS, ASRelGraphError
 from cc_calc.rel_loading import CaidaRelLoader, NetworkXRelGraph
 
 
 class TestListPathReceivers:
+    def test_if_as_not_in_graph_raise_error(self) -> None:
+        graph = NetworkXRelGraph(nx.DiGraph())
+
+        with pytest.raises(ASRelGraphError):
+            graph.bgp_receivers_from_as("1")
+
     @pytest.mark.parametrize(
         "topology, receivers",
         [

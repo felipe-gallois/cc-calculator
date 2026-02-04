@@ -6,7 +6,13 @@ from typing import Any, Iterable, TextIO
 
 import networkx as nx
 
-from cc_calc.bgp_simulation import AS, ASRelGraph, ASRelLoader
+from cc_calc.bgp_simulation import (
+    AS,
+    ASRelGraph,
+    ASRelGraphError,
+    ASRelLoader,
+    ASRelLoadingError,
+)
 
 
 class NetworkXRelGraph(ASRelGraph):
@@ -20,9 +26,7 @@ class NetworkXRelGraph(ASRelGraph):
         """
         self._digraph = digraph
 
-    def bgp_receivers_from_as(
-        self, curr_as: str | AS, prev_as: str | AS | None = None
-    ) -> set[AS]:
+    def bgp_receivers_from_as(self, curr_as: AS, prev_as: AS | None = None) -> set[AS]:
         """Collects ASes that receive BGP path announcements from an AS.
 
         The ASes are collected according to the valley-free rule.
@@ -33,6 +37,9 @@ class NetworkXRelGraph(ASRelGraph):
                      the valley-free rule).
 
         Returns: A set of autonomous systems.
+
+        Raises:
+            ASRelGraphError: If curr_as is not in the graph.
         """
         succ = self._successors(curr_as)
 
@@ -45,7 +52,10 @@ class NetworkXRelGraph(ASRelGraph):
         return {s for s in succ if self._as_rel(curr_as, s) == "customer"}
 
     def _successors(self, as_: AS) -> set[AS]:
-        return set(self._digraph.successors(as_))
+        try:
+            return set(self._digraph.successors(as_))
+        except nx.NetworkXError as e:
+            raise ASRelGraphError(f"AS {as_} is not in the graph") from e
 
     def _as_rel(self, src_as: AS, dst_as: AS) -> Any:
         return self._digraph.edges[(src_as, dst_as)]["type"]
@@ -69,10 +79,16 @@ class CaidaRelLoader(ASRelLoader):
             An ASRelGraph instance, representing a digraph in which nodes are autonomous
             systems and arcs are relationships. The arcs are annotated with the type of
             the relationship.
+
+        Raises:
+            ASRelLoadingException: If there is any problem reading the input file.
         """
-        with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
-            digraph = self._build_graph(text)
-            return NetworkXRelGraph(digraph)
+        try:
+            with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
+                digraph = self._build_graph(text)
+                return NetworkXRelGraph(digraph)
+        except Exception as e:
+            raise ASRelLoadingError("Could not read input file") from e
 
     @staticmethod
     def _build_graph(source: TextIO) -> nx.DiGraph[AS]:

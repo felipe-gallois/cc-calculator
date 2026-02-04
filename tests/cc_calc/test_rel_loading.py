@@ -3,7 +3,8 @@ from io import StringIO
 import networkx as nx
 import pytest
 
-from cc_calc.rel_loading import AS, ASRelGraph, CaidaRelLoader
+from cc_calc.bgp_simulation import AS
+from cc_calc.rel_loading import CaidaRelLoader, NetworkXRelGraph
 
 
 class TestListPathReceivers:
@@ -17,7 +18,7 @@ class TestListPathReceivers:
     def test_when_originates_new_path_propagate_to_all(
         self, topology: list[tuple[AS, AS, dict[str, str]]], receivers: set[AS]
     ) -> None:
-        graph = ASRelGraph(nx.DiGraph(topology))
+        graph = NetworkXRelGraph(nx.DiGraph(topology))
 
         assert graph.bgp_receivers_from_as("1") == receivers
 
@@ -32,7 +33,7 @@ class TestListPathReceivers:
     def test_when_receives_prefix_from_third_party_propagate_according_to_valley_free(
         self, topology: list[tuple[AS, AS, dict[str, str]]], receivers: set[AS]
     ) -> None:
-        graph = ASRelGraph(nx.DiGraph(topology))
+        graph = NetworkXRelGraph(nx.DiGraph(topology))
 
         assert graph.bgp_receivers_from_as("2", prev_as="1") == receivers
 

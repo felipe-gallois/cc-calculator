@@ -6,10 +6,10 @@ from typing import Any, Iterable, TextIO
 
 import networkx as nx
 
-type AS = str
+from cc_calc.bgp_simulation import AS, ASRelGraph, ASRelLoader
 
 
-class ASRelGraph:
+class NetworkXRelGraph(ASRelGraph):
     """A wrapper for a digraph of autonomous systems and relationship types."""
 
     def __init__(self, digraph: nx.DiGraph[AS]) -> None:
@@ -51,7 +51,7 @@ class ASRelGraph:
         return self._digraph.edges[(src_as, dst_as)]["type"]
 
 
-class CaidaRelLoader:
+class CaidaRelLoader(ASRelLoader):
     """Autonomous system relationship loader for the CAIDA AS Relationships Dataset."""
 
     def __init__(self, path: str | PathLike[str]) -> None:
@@ -62,7 +62,7 @@ class CaidaRelLoader:
         """
         self._path = path
 
-    def load_rel_graph(self) -> ASRelGraph:
+    def load_rel_graph(self) -> NetworkXRelGraph:
         """Loads autonomous system relationships from CAIDA's dataset.
 
         Returns:
@@ -72,7 +72,7 @@ class CaidaRelLoader:
         """
         with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
             digraph = self._build_graph(text)
-            return ASRelGraph(digraph)
+            return NetworkXRelGraph(digraph)
 
     @staticmethod
     def _build_graph(source: TextIO) -> nx.DiGraph[AS]:

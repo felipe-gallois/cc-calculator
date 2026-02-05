@@ -1,3 +1,5 @@
+"""Loading of RIB entries."""
+
 import bz2
 from collections.abc import Iterator
 from os import PathLike
@@ -6,10 +8,24 @@ from cc_calc.bgp_simulation import IPPrefix, RIBEntry, RIBLoader, RIBLoadingErro
 
 
 class CaidaRIBLoader(RIBLoader):
+    """A RIB entry loader for the CAIDA AS Relationships Dataset."""
+
     def __init__(self, path: str | PathLike[str]) -> None:
+        """Initializes the loader object.
+
+        Args:
+            path: The path to the "paths" database file.
+        """
         self._path = path
 
     def iter(self) -> Iterator[RIBEntry]:
+        """Returns an iterator for CAIDA RIB entries.
+
+        Returns: The iterator.
+
+        Raises:
+            RIBLoadingError: If the database file cannot be read.
+        """
         try:
             with bz2.open(self._path, "rt") as text:
                 for line in text:

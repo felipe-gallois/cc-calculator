@@ -67,13 +67,30 @@ class ASRelLoader(ABC):
 
 
 class IPPrefix:
+    """An IPv4 or IPv6 prefix."""
+
     def __init__(self, prefix: str) -> None:
+        """Initiliazes the prefix.
+
+        Args:
+            prefix: A string in prefix format.
+
+        Raises:
+            ValueError: If the string is in an invalid format.
+        """
         try:
             self._prefix = ip_network(prefix)
         except ValueError as e:
             raise ValueError(f"Tried constructing an IPPrefix with {prefix}") from e
 
     def __eq__(self, other: object) -> bool:
+        """Checks if another object is equal.
+
+        Args:
+            other: Another object.
+
+        Returns: True if the object is the same prefix, False otherwise.
+        """
         if not isinstance(other, IPPrefix):
             return False
 
@@ -82,11 +99,27 @@ class IPPrefix:
 
 @dataclass
 class RIBEntry:
+    """A RIB entry.
+
+    Attributes:
+        prefix: The prefix that the path leads to.
+        as_path: The sequence of AS that make the path, from first to last.
+    """
+
     prefix: IPPrefix
     as_path: list[AS]
 
 
 class RIBLoader(ABC):
+    """An abstraction for a RIB entry loader."""
+
     @abstractmethod
     def iter(self) -> Iterator[RIBEntry]:
+        """Returns an iterator for RIB entries.
+
+        Returns: The iterator.
+
+        Raises:
+            RIBLoadingError: If the database file cannot be read.
+        """
         pass

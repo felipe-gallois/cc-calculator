@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Iterator
 from dataclasses import dataclass
-from ipaddress import IPv4Network, IPv6Network
+from ipaddress import ip_network
 
 type AS = str
 
@@ -66,13 +66,27 @@ class ASRelLoader(ABC):
         pass
 
 
-class RIBLoader(ABC):
-    @abstractmethod
-    def iter(self) -> Iterator[RIBEntry]:
-        pass
+class IPPrefix:
+    def __init__(self, prefix: str) -> None:
+        try:
+            self._prefix = ip_network(prefix)
+        except ValueError as e:
+            raise ValueError(f"Tried constructing an IPPrefix with {prefix}") from e
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, IPPrefix):
+            return False
+
+        return self._prefix == other._prefix
 
 
 @dataclass
 class RIBEntry:
-    prefix: IPv4Network | IPv6Network
+    prefix: IPPrefix
     as_path: list[AS]
+
+
+class RIBLoader(ABC):
+    @abstractmethod
+    def iter(self) -> Iterator[RIBEntry]:
+        pass

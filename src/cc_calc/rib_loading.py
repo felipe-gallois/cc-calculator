@@ -1,11 +1,8 @@
 import bz2
-
 from collections.abc import Iterator
-from ipaddress import ip_network, IPv4Network
 from os import PathLike
-from typing import TextIO
 
-from cc_calc.bgp_simulation import RIBEntry, RIBLoader, RIBLoadingError
+from cc_calc.bgp_simulation import IPPrefix, RIBEntry, RIBLoader, RIBLoadingError
 
 
 class CaidaRIBLoader(RIBLoader):
@@ -26,4 +23,4 @@ class CaidaRIBLoader(RIBLoader):
 
         as_path = spaced_tokens[1].split("|")
 
-        return RIBEntry(prefix=ip_network(spaced_tokens[2]), as_path=as_path)
+        return RIBEntry(prefix=IPPrefix(spaced_tokens[2]), as_path=as_path)

@@ -1,6 +1,9 @@
 """Simulation of BGP path propagation."""
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
+from dataclasses import dataclass
+from ipaddress import IPv4Network, IPv6Network
 
 type AS = str
 
@@ -13,6 +16,12 @@ class ASRelGraphError(Exception):
 
 class ASRelLoadingError(Exception):
     """Any error raised by an AS relationship loader."""
+
+    pass
+
+
+class RIBLoadingError(Exception):
+    """Any error raised by an RIB loader."""
 
     pass
 
@@ -55,3 +64,15 @@ class ASRelLoader(ABC):
             ASRelLoadingException: If there is any problem reading the input file.
         """
         pass
+
+
+class RIBLoader(ABC):
+    @abstractmethod
+    def iter(self) -> Iterator[RIBEntry]:
+        pass
+
+
+@dataclass
+class RIBEntry:
+    prefix: IPv4Network | IPv6Network
+    as_path: list[AS]

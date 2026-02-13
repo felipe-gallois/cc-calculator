@@ -1,14 +1,14 @@
 """Loading of RIB entries."""
 
 import bz2
-from collections.abc import Iterator
 from os import PathLike
+from typing import TextIO
 
-from cc_calc.bgp_simulation import IPPrefix, RIBEntry, RIBLoader, RIBLoadingError
+from cc_calc.bgp_simulation import AS, AdjRIBLoader, IPPrefix, RIBLoadingError
 
 
-class CaidaRIBLoader(RIBLoader):
-    """A RIB entry loader for the CAIDA AS Relationships Dataset."""
+class CaidaRIBLoader(AdjRIBLoader):
+    """A loader for Adj-RIB-In entries found in CAIDA's RIB dumps."""
 
     def __init__(self, path: str | PathLike[str]) -> None:
         """Initializes the loader object.
@@ -18,25 +18,37 @@ class CaidaRIBLoader(RIBLoader):
         """
         self._path = path
 
-    def iter(self) -> Iterator[RIBEntry]:
-        """Returns an iterator for CAIDA RIB entries.
+    def load_prefix_paths(self) -> dict[IPPrefix, list[list[AS]]]:
+        """Loads entries from CAIDA RIB dumps and maps prefixes to announced paths.
 
-        Returns: The iterator.
+        Loads Adj-RIB-In entries gathered in the previously informed "paths" file of
+        CAIDA's AS Relationship dataset and creates mappings between prefixes and paths
+        that lead to them.
+
+        Returns: A dict, mapping IP prefixes to a collection of AS paths.
 
         Raises:
-            RIBLoadingError: If the database file cannot be read.
+            RIBLoadingError: If the dump file cannot be read.
         """
         try:
             with bz2.open(self._path, "rt") as text:
-                for line in text:
-                    yield CaidaRIBLoader._parse_entry(line)
+                return CaidaRIBLoader._parse_entries(text)
         except Exception as e:
             raise RIBLoadingError("Could not read input file") from e
 
     @staticmethod
-    def _parse_entry(line: str) -> RIBEntry:
-        spaced_tokens = line.split(" ")
+    def _parse_entries(text: TextIO) -> dict[IPPrefix, list[list[AS]]]:
+        mappings: dict[IPPrefix, list[list[AS]]] = {}
 
-        as_path = spaced_tokens[1].split("|")
+        for line in text:
+            spaced_tokens = line.split(" ")
 
-        return RIBEntry(prefix=IPPrefix(spaced_tokens[2]), as_path=as_path)
+            prefix = IPPrefix(spaced_tokens[2])
+            as_path = spaced_tokens[1].split("|")
+
+            if prefix not in mappings:
+                mappings[prefix] = []
+
+            mappings[prefix].append(as_path)
+
+        return mappings

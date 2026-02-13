@@ -1,29 +1,54 @@
-import pytest
+from io import StringIO
 
 from cc_calc.bgp_simulation import IPPrefix
 from cc_calc.rib_loading import CaidaRIBLoader
 
-IPV4_ENTRY = "xxxx/xxx00|0 123|1234|12345 123.123.123.0/24 i 234.234.234.234\n"
+SINGLE_ENTRY = "xxxx/xxx00|0 123|1234|12345 123.123.123.0/24 i 234.234.234.234\n"
 
-IPV6_ENTRY = "xxxx/xxx00|0 123|1234|12345 2001:db8::/32 i 234.234.234.234\n"
+DIFFERENT_PREFIX_ENTRIES = (
+    "xxxx/xxx00|0 123|1234|12345 123.123.123.0/24 i 234.234.234.234\n"
+    "xxxx/xxx00|0 234|2345|23456 123.111.123.0/24 i 234.234.234.234\n"
+)
+
+SAME_PREFIX_ENTRIES = (
+    "xxxx/xxx00|0 123|1234|12345 123.123.123.0/24 i 234.234.234.234\n"
+    "xxxx/xxx00|0 234|2345|23456 123.123.123.0/24 i 234.234.234.234\n"
+)
+
+SINGLE_ENTRY_PATH = {IPPrefix("123.123.123.0/24"): [["123", "1234", "12345"]]}
+
+DIFFERENT_PREFIX_ENTRIES_PATHS = {
+    IPPrefix("123.123.123.0/24"): [["123", "1234", "12345"]],
+    IPPrefix("123.111.123.0/24"): [["234", "2345", "23456"]],
+}
+
+SAME_PREFIX_ENTRIES_PATHS = {
+    IPPrefix("123.123.123.0/24"): [["123", "1234", "12345"], ["234", "2345", "23456"]],
+}
 
 
-class TestGenerateRIBEntry:
-    @pytest.mark.parametrize(
-        "entry, prefix",
-        [
-            (IPV4_ENTRY, "123.123.123.0/24"),
-            (IPV6_ENTRY, "2001:db8::/32"),
-        ],
-    )
-    def test_ipv4_input_returns_entry_with_correct_prefix(
-        self, entry: str, prefix: str
+class TestLoadPrefixPaths:
+    def test_when_receives_single_entry_returns_single_mapping(self) -> None:
+        text = StringIO(SINGLE_ENTRY)
+
+        prefix_paths = CaidaRIBLoader._parse_entries(text)
+
+        assert prefix_paths == SINGLE_ENTRY_PATH
+
+    def test_when_receives_entries_with_two_different_prefixes_returns_two_mappings(
+        self,
     ) -> None:
-        entry_obj = CaidaRIBLoader._parse_entry(entry)
+        text = StringIO(DIFFERENT_PREFIX_ENTRIES)
 
-        assert entry_obj.prefix == IPPrefix(prefix)
+        prefix_paths = CaidaRIBLoader._parse_entries(text)
 
-    def test_valid_input_returns_entry_with_correct_as_path(self) -> None:
-        entry = CaidaRIBLoader._parse_entry(IPV4_ENTRY)
+        assert prefix_paths == DIFFERENT_PREFIX_ENTRIES_PATHS
 
-        assert entry.as_path == ["123", "1234", "12345"]
+    def test_when_receives_entries_with_two_equal_prefixes_returns_one_mapping(
+        self,
+    ) -> None:
+        text = StringIO(DIFFERENT_PREFIX_ENTRIES)
+
+        prefix_paths = CaidaRIBLoader._parse_entries(text)
+
+        assert prefix_paths == DIFFERENT_PREFIX_ENTRIES_PATHS

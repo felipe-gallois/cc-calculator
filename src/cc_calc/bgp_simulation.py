@@ -1,7 +1,6 @@
 """Simulation of BGP path propagation."""
 
 from abc import ABC, abstractmethod
-from collections.abc import Iterator
 from dataclasses import dataclass
 from ipaddress import ip_network
 
@@ -96,6 +95,13 @@ class IPPrefix:
 
         return self._prefix == other._prefix
 
+    def __hash__(self) -> int:
+        """Implements the hash magic method.
+
+        Returns: The hash value for the object.
+        """
+        return hash(self._prefix)
+
 
 @dataclass
 class RIBEntry:
@@ -110,16 +116,16 @@ class RIBEntry:
     as_path: list[AS]
 
 
-class RIBLoader(ABC):
-    """An abstraction for a RIB entry loader."""
+class AdjRIBLoader(ABC):
+    """An abstraction for a Adj-RIB-In entry loader."""
 
     @abstractmethod
-    def iter(self) -> Iterator[RIBEntry]:
-        """Returns an iterator for RIB entries.
+    def load_prefix_paths(self) -> dict[IPPrefix, list[list[AS]]]:
+        """Loads Adj-RIB-In entries from a file and maps prefixes to announced paths.
 
-        Returns: The iterator.
+        Returns: A dict, mapping IP prefixes to AS paths that lead to them.
 
         Raises:
-            RIBLoadingError: If the database file cannot be read.
+            RIBLoadingError: If the dump file cannot be read.
         """
         pass

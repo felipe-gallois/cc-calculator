@@ -26,7 +26,9 @@ class NetworkXRelGraph(ASRelGraph):
         """
         self._digraph = digraph
 
-    def bgp_receivers_from_as(self, curr_as: AS, prev_as: AS | None = None) -> set[AS]:
+    def bgp_receivers_from_as(
+        self, curr_as: int | str | AS, prev_as: int | str | AS | None = None
+    ) -> set[AS]:
         """Collects ASes that receive BGP path announcements from an AS.
 
         The ASes are collected according to the valley-free rule.
@@ -41,10 +43,16 @@ class NetworkXRelGraph(ASRelGraph):
         Raises:
             ASRelGraphError: If curr_as is not in the graph.
         """
+        if not isinstance(curr_as, AS):
+            curr_as = AS(curr_as)
+
         succ = self._successors(curr_as)
 
         if not prev_as:
             return succ
+
+        if not isinstance(prev_as, AS):
+            prev_as = AS(prev_as)
 
         if self._as_rel(prev_as, curr_as) == "customer":
             return succ
@@ -55,7 +63,7 @@ class NetworkXRelGraph(ASRelGraph):
         try:
             return set(self._digraph.successors(as_))
         except nx.NetworkXError as e:
-            raise ASRelGraphError(f"AS {as_} is not in the graph") from e
+            raise ASRelGraphError(f"{as_} is not in the graph") from e
 
     def _as_rel(self, src_as: AS, dst_as: AS) -> Any:
         return self._digraph.edges[(src_as, dst_as)]["type"]
@@ -76,9 +84,9 @@ class CaidaRelLoader(ASRelLoader):
         """Loads autonomous system relationships from CAIDA's dataset.
 
         Returns:
-            An ASRelGraph instance, representing a digraph in which nodes are autonomous
-            systems and arcs are relationships. The arcs are annotated with the type of
-            the relationship.
+            A NetworkXRelGraph instance, representing a digraph in which nodes are
+            autonomous systems and arcs are relationships. The arcs are annotated with
+            the type of the relationship.
 
         Raises:
             ASRelLoadingException: If there is any problem reading the input file.
@@ -98,7 +106,7 @@ class CaidaRelLoader(ASRelLoader):
             tokens = CaidaRelLoader._tokenize(line)
 
             if tokens:
-                ases = (tokens[0], tokens[1])
+                ases = AS(tokens[0]), AS(tokens[1])
                 rel_type = tokens[2]
 
                 CaidaRelLoader._add_nodes(ases, rel_graph)

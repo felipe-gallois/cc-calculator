@@ -7,6 +7,20 @@ from cc_calc.bgp_simulation import AS, ASRelGraphError
 from cc_calc.rel_loading import CaidaRelLoader, NetworkXRelGraph
 
 
+def as_set(str_set: set[str]) -> set[AS]:
+    return {AS(x) for x in str_set}
+
+
+def as_topo(
+    str_topo: list[tuple[str, str, dict[str, str]]],
+) -> list[tuple[AS, AS, dict[str, str]]]:
+    return [(AS(x), AS(y), z) for x, y, z in str_topo]
+
+
+def as_edges(str_topo: set[tuple[str, str, str]]) -> set[tuple[AS, AS, str]]:
+    return {(AS(x), AS(y), z) for x, y, z in str_topo}
+
+
 class TestListPathReceivers:
     def test_if_as_not_in_graph_raise_error(self) -> None:
         graph = NetworkXRelGraph(nx.DiGraph())
@@ -22,11 +36,11 @@ class TestListPathReceivers:
         ],
     )
     def test_when_originates_new_path_propagate_to_all(
-        self, topology: list[tuple[AS, AS, dict[str, str]]], receivers: set[AS]
+        self, topology: list[tuple[str, str, dict[str, str]]], receivers: set[str]
     ) -> None:
-        graph = NetworkXRelGraph(nx.DiGraph(topology))
+        graph = NetworkXRelGraph(nx.DiGraph(as_topo(topology)))
 
-        assert graph.bgp_receivers_from_as("1") == receivers
+        assert graph.bgp_receivers_from_as("1") == as_set(receivers)
 
     @pytest.mark.parametrize(
         "topology, receivers",
@@ -37,11 +51,11 @@ class TestListPathReceivers:
         ],
     )
     def test_when_receives_prefix_from_third_party_propagate_according_to_valley_free(
-        self, topology: list[tuple[AS, AS, dict[str, str]]], receivers: set[AS]
+        self, topology: list[tuple[str, str, dict[str, str]]], receivers: set[str]
     ) -> None:
-        graph = NetworkXRelGraph(nx.DiGraph(topology))
+        graph = NetworkXRelGraph(nx.DiGraph(as_topo(topology)))
 
-        assert graph.bgp_receivers_from_as("2", prev_as="1") == receivers
+        assert graph.bgp_receivers_from_as("2", prev_as="1") == as_set(receivers)
 
 
 class TestLoadCaidaRels:
@@ -66,12 +80,12 @@ class TestLoadCaidaRels:
             ),
         ],
     )
-    def test_loads_ases_from_announcements(self, input: str, peers: set[AS]) -> None:
+    def test_loads_ases_from_announcements(self, input: str, peers: set[str]) -> None:
         src = StringIO(input)
 
         graph = CaidaRelLoader._build_graph(src)
 
-        assert set(graph.nodes) == peers
+        assert set(graph.nodes) == as_set(peers)
 
     @pytest.mark.parametrize(
         "input, rels",
@@ -87,10 +101,10 @@ class TestLoadCaidaRels:
         ],
     )
     def test_loads_rels_from_announcements(
-        self, input: str, rels: set[tuple[AS, AS, str]]
+        self, input: str, rels: set[tuple[str, str, str]]
     ) -> None:
         src = StringIO(input)
 
         graph = CaidaRelLoader._build_graph(src)
 
-        assert set(graph.edges(data="type")) == rels
+        assert set(graph.edges(data="type")) == as_edges(rels)

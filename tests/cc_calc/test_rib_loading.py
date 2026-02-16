@@ -1,6 +1,7 @@
 from io import StringIO
 
-from cc_calc.bgp_simulation import ASPath, ip_prefix
+from cc_calc.autonomous_system import ASPath
+from cc_calc.ip_prefix import ip_prefix
 from cc_calc.rib_loading import CaidaRIBLoader
 
 SINGLE_ENTRY = "xxxx/xxx00|0 123|1234|12345 123.123.123.0/24 i 234.234.234.234\n"

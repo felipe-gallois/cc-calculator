@@ -3,7 +3,8 @@ from io import StringIO
 import networkx as nx
 import pytest
 
-from cc_calc.bgp_simulation import AS, ASRelGraphError
+from cc_calc.autonomous_system import AS
+from cc_calc.bgp_simulation import ASRelGraphError
 from cc_calc.rel_loading import CaidaRelLoader, NetworkXRelGraph
 
 

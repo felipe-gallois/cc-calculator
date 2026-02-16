@@ -4,14 +4,9 @@ import bz2
 from os import PathLike
 from typing import TextIO
 
-from cc_calc.bgp_simulation import (
-    AdjRIBLoader,
-    ASPath,
-    IPv4Prefix,
-    IPv6Prefix,
-    RIBLoadingError,
-    ip_prefix,
-)
+from cc_calc.autonomous_system import ASPath
+from cc_calc.bgp_simulation import AdjRIBLoader, RIBLoadingError
+from cc_calc.ip_prefix import IPv4Prefix, IPv6Prefix, ip_prefix
 
 
 class CaidaRIBLoader(AdjRIBLoader):

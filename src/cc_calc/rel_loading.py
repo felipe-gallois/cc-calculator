@@ -6,8 +6,8 @@ from typing import Any, Iterable, TextIO
 
 import networkx as nx
 
+from cc_calc.autonomous_system import AS
 from cc_calc.bgp_simulation import (
-    AS,
     ASRelGraph,
     ASRelGraphError,
     ASRelLoader,

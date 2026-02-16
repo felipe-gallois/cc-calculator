@@ -25,14 +25,14 @@ class CaidaRIBLoader(AdjRIBLoader):
         """
         self._path = path
 
-    def load_prefix_paths(self) -> dict[IPv4Prefix | IPv6Prefix, list[ASPath]]:
+    def load_prefix_paths(self) -> dict[IPv4Prefix | IPv6Prefix, set[ASPath]]:
         """Loads entries from CAIDA RIB dumps and maps prefixes to announced paths.
 
         Loads Adj-RIB-In entries gathered in the previously informed "paths" file of
         CAIDA's AS Relationship dataset and creates mappings between prefixes and paths
         that lead to them.
 
-        Returns: A dict, mapping IP prefixes to a collection of AS paths.
+        Returns: A dict, mapping IP prefixes to a set of AS paths.
 
         Raises:
             RIBLoadingError: If the dump file cannot be read.
@@ -44,8 +44,8 @@ class CaidaRIBLoader(AdjRIBLoader):
             raise RIBLoadingError("Could not read input file") from e
 
     @staticmethod
-    def _parse_entries(text: TextIO) -> dict[IPv4Prefix | IPv6Prefix, list[ASPath]]:
-        mappings: dict[IPv4Prefix | IPv6Prefix, list[ASPath]] = {}
+    def _parse_entries(text: TextIO) -> dict[IPv4Prefix | IPv6Prefix, set[ASPath]]:
+        mappings: dict[IPv4Prefix | IPv6Prefix, set[ASPath]] = {}
 
         for line in text:
             spaced_tokens = line.split(" ")
@@ -54,8 +54,8 @@ class CaidaRIBLoader(AdjRIBLoader):
             as_path = ASPath(spaced_tokens[1].split("|"))
 
             if prefix not in mappings:
-                mappings[prefix] = []
+                mappings[prefix] = set()
 
-            mappings[prefix].append(as_path)
+            mappings[prefix].add(as_path)
 
         return mappings

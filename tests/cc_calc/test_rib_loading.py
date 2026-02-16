@@ -34,7 +34,7 @@ class TestLoadPrefixPaths:
         prefix_path_mappings = CaidaRIBLoader._parse_entries(text)
 
         expected_mapping = {
-            ip_prefix(key): list(map(ASPath, values))
+            ip_prefix(key): set(map(ASPath, values))
             for key, values in SINGLE_ENTRY_PATH.items()
         }
 
@@ -48,7 +48,7 @@ class TestLoadPrefixPaths:
         prefix_path_mappings = CaidaRIBLoader._parse_entries(text)
 
         expected_mappings = {
-            ip_prefix(key): list(map(ASPath, values))
+            ip_prefix(key): set(map(ASPath, values))
             for key, values in DIFFERENT_PREFIX_ENTRIES_PATHS.items()
         }
 
@@ -62,7 +62,7 @@ class TestLoadPrefixPaths:
         prefix_path_mappings = CaidaRIBLoader._parse_entries(text)
 
         expected_mapping = {
-            ip_prefix(key): list(map(ASPath, values))
+            ip_prefix(key): set(map(ASPath, values))
             for key, values in SAME_PREFIX_ENTRIES_PATHS.items()
         }
 

@@ -86,13 +86,19 @@ class ASPath:
         Args:
             path: The sequence of ASes.
         """
-        self._path = [AS(x) if not isinstance(x, AS) else x for x in path]
+        self._path = tuple(AS(x) if not isinstance(x, AS) else x for x in path)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ASPath):
             return NotImplemented
 
+        if len(self._path) != len(other._path):
+            return False
+
         return all([True if x == y else False for x, y in zip(self._path, other._path)])
+
+    def __hash__(self) -> int:
+        return hash(self._path)
 
     def __repr__(self) -> str:
         return f"ASPath({self._path})"
@@ -233,7 +239,7 @@ class AdjRIBLoader(ABC):
     """An abstraction for a Adj-RIB-In entry loader."""
 
     @abstractmethod
-    def load_prefix_paths(self) -> dict[IPv4Prefix | IPv6Prefix, list[ASPath]]:
+    def load_prefix_paths(self) -> dict[IPv4Prefix | IPv6Prefix, set[ASPath]]:
         """Loads Adj-RIB-In entries from a file and maps prefixes to announced paths.
 
         Returns: A dict, mapping IP prefixes to AS paths that lead to them.

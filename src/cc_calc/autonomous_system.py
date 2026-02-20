@@ -1,6 +1,7 @@
 """Autonomous system entity and utilities."""
 
 from collections.abc import Iterator, Sequence
+from typing import overload
 
 MAX_ASN = 2**32 - 1
 
@@ -93,6 +94,14 @@ class ASPath:
     def __iter__(self) -> Iterator[AS]:
         for _as in self._path:
             yield _as
+
+    @overload
+    def __getitem__(self, key: int) -> AS:
+        pass
+
+    @overload
+    def __getitem__(self, key: slice) -> "ASPath":
+        pass
 
     def __getitem__(self, key: int | slice) -> AS | "ASPath":
         if isinstance(key, slice):

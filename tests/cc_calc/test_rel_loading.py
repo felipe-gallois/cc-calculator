@@ -47,7 +47,8 @@ class TestListPathReceivers:
         "topology, receivers",
         [
             ([("1", "2", {"type": "peer"}), ("2", "3", {"type": "peer"})], set()),
-            ([("1", "2", {"type": "peer"}), ("2", "3", {"type": "customer"})], {"3"}),
+            ([("1", "2", {"type": "peer"}), ("2", "3", {"type": "provider"})], {"3"}),
+            ([("1", "2", {"type": "peer"}), ("2", "3", {"type": "customer"})], set()),
             ([("1", "2", {"type": "customer"}), ("2", "3", {"type": "peer"})], {"3"}),
         ],
     )
@@ -93,7 +94,7 @@ class TestLoadCaidaRels:
         [
             (
                 "12|12345|-1|bgp",
-                {("12", "12345", "provider"), ("12345", "12", "custumer")},
+                {("12", "12345", "provider"), ("12345", "12", "customer")},
             ),
             (
                 "12|12345|0|bgp",

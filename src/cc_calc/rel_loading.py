@@ -57,7 +57,7 @@ class NetworkXRelGraph(ASRelGraph):
         if self._as_rel(prev_as, curr_as) == "customer":
             return succ
 
-        return {s for s in succ if self._as_rel(curr_as, s) == "customer"}
+        return {s for s in succ if self._as_rel(curr_as, s) == "provider"}
 
     def _successors(self, as_: AS) -> set[AS]:
         try:
@@ -152,4 +152,4 @@ class CaidaRelLoader(ASRelLoader):
     @staticmethod
     def _annotate_p2c_edges(ases: tuple[AS, AS], graph: nx.DiGraph[AS]) -> None:
         graph.edges[(ases[0], ases[1])]["type"] = "provider"
-        graph.edges[(ases[1], ases[0])]["type"] = "custumer"
+        graph.edges[(ases[1], ases[0])]["type"] = "customer"

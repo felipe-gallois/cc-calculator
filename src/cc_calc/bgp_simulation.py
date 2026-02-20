@@ -1,9 +1,13 @@
 """Simulation of BGP path propagation."""
 
 from abc import ABC, abstractmethod
+from collections import deque
+from collections.abc import Iterable
+from dataclasses import dataclass
 
 from cc_calc.autonomous_system import AS, ASPath
 from cc_calc.ip_prefix import IPv4Prefix, IPv6Prefix
+from cc_calc.loc_rib import LocRIBManagerError, SimpleLocRIBManager
 
 
 class ASRelGraphError(Exception):
@@ -20,6 +24,12 @@ class ASRelLoadingError(Exception):
 
 class RIBLoadingError(Exception):
     """Any error raised by an RIB loader."""
+
+    pass
+
+
+class ASPathEstimationError(Exception):
+    """Any error raised by an AS path estimator."""
 
     pass
 
@@ -77,3 +87,67 @@ class AdjRIBLoader(ABC):
             RIBLoadingError: If the dump file cannot be read.
         """
         pass
+
+
+class ASPathEstimator(ABC):
+    @abstractmethod
+    def fit(
+        self,
+        as_rel_graph: ASRelGraph,
+        known_paths: Iterable[ASPath],
+    ) -> None:
+        pass
+
+    @abstractmethod
+    def predict(self, src_as: AS) -> ASPath:
+        pass
+
+
+def _collect_base_as_set(known_paths: Iterable[ASPath]) -> set[AS]:
+    return {_as for path in known_paths for _as in path}
+
+
+class SimpleASPathEstimator(ASPathEstimator):
+    def __init__(self) -> None:
+        self._rib_manager = SimpleLocRIBManager()
+
+    def fit(
+        self,
+        as_rel_graph: ASRelGraph,
+        known_paths: Iterable[ASPath],
+    ) -> None:
+        update_queue: deque[AS] = deque()
+
+        self._insert_sure_paths(known_paths)
+
+        for _as in _collect_base_as_set(known_paths):
+            update_queue.append(_as)
+
+        while len(update_queue) != 0:
+            updated_as = update_queue.popleft()
+            as_path = self._rib_manager.best_path(updated_as)
+
+            appended_path = as_path.append(updated_as)
+
+            try:
+                prev_as = as_path[0]
+            except IndexError:
+                prev_as = None
+
+            peers = as_rel_graph.bgp_receivers_from_as(updated_as, prev_as)
+
+            for peer in peers:
+                self._rib_manager.eval_unsure_path(peer, appended_path)
+
+                if self._rib_manager.performed_unsure_update:
+                    update_queue.append(peer)
+
+    def predict(self, src_as: AS) -> ASPath:
+        try:
+            return self._rib_manager.best_path(src_as)
+        except LocRIBManagerError as e:
+            raise ASPathEstimationError(f"{src_as} was not fitted") from e
+
+    def _insert_sure_paths(self, known_paths: Iterable[ASPath]) -> None:
+        for path in known_paths:
+            self._rib_manager.eval_sure_path_recursively(path)

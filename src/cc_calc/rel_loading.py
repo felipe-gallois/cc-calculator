@@ -1,6 +1,7 @@
 """Loading of autonomous systems' relationships."""
 
 import bz2
+from enum import Enum, auto
 from os import PathLike
 from typing import Any, Iterable, TextIO
 
@@ -13,6 +14,12 @@ from cc_calc.bgp_simulation import (
     ASRelLoader,
     ASRelLoadingError,
 )
+
+
+class _RelType(Enum):
+    CUSTOMER = auto()
+    PROVIDER = auto()
+    PEER = auto()
 
 
 class NetworkXRelGraph(ASRelGraph):
@@ -54,10 +61,10 @@ class NetworkXRelGraph(ASRelGraph):
         if not isinstance(prev_as, AS):
             prev_as = AS(prev_as)
 
-        if self._as_rel(prev_as, curr_as) == "customer":
+        if self._as_rel(prev_as, curr_as) == _RelType.CUSTOMER:
             return succ
 
-        return {s for s in succ if self._as_rel(curr_as, s) == "provider"}
+        return {s for s in succ if self._as_rel(curr_as, s) == _RelType.PROVIDER}
 
     def _successors(self, as_: AS) -> set[AS]:
         try:
@@ -146,10 +153,10 @@ class CaidaRelLoader(ASRelLoader):
 
     @staticmethod
     def _annotate_p2p_edges(ases: tuple[AS, AS], graph: nx.DiGraph[AS]) -> None:
-        graph.edges[(ases[0], ases[1])]["type"] = "peer"
-        graph.edges[(ases[1], ases[0])]["type"] = "peer"
+        graph.edges[(ases[0], ases[1])]["type"] = _RelType.PEER
+        graph.edges[(ases[1], ases[0])]["type"] = _RelType.PEER
 
     @staticmethod
     def _annotate_p2c_edges(ases: tuple[AS, AS], graph: nx.DiGraph[AS]) -> None:
-        graph.edges[(ases[0], ases[1])]["type"] = "provider"
-        graph.edges[(ases[1], ases[0])]["type"] = "customer"
+        graph.edges[(ases[0], ases[1])]["type"] = _RelType.PROVIDER
+        graph.edges[(ases[1], ases[0])]["type"] = _RelType.CUSTOMER

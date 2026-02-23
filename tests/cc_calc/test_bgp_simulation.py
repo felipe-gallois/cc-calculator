@@ -43,7 +43,8 @@ class TestEstimateASPath:
             src_as = dummy_path[i]
             expected_path = dummy_path[i + 1 :]
 
-            assert estimator.predict(src_as) == expected_path
+            if src_as is not None:
+                assert estimator.predict(src_as) == expected_path
 
     def test_when_there_is_peer_path_is_propagated(
         self,
@@ -85,7 +86,7 @@ class TestEstimateASPath:
         peer_as_one = AS(65540)
         peer_as_two = AS(65541)
 
-        def effect(curr_as, prev_as):
+        def effect(curr_as: AS, prev_as: AS) -> set[AS]:
             if curr_as == dummy_path[0]:
                 return {peer_as_one}
             elif curr_as == peer_as_one:

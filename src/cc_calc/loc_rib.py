@@ -44,6 +44,7 @@ class SimpleLocRIBManager:
 
     @property
     def performed_unsure_update(self) -> bool:
+        """Whether the last unsure path evaluation caused a Loc-RIB update."""
         return self._performed_unsure_update
 
     def eval_sure_path_recursively(self, path: ASPath) -> None:
@@ -56,7 +57,10 @@ class SimpleLocRIBManager:
             path: The AS path to the prefix.
         """
         for i in range(len(path)):
-            self._eval_sure_path(path[i], path[i + 1 :])
+            last_as = path[i]
+
+            if last_as is not None:
+                self._eval_sure_path(last_as, path[i + 1 :])
 
     def eval_unsure_path(self, src_as: AS, path: ASPath) -> None:
         """Adds an unsure path to a Loc-RIB table.

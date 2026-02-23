@@ -96,18 +96,21 @@ class ASPath:
             yield _as
 
     @overload
-    def __getitem__(self, key: int) -> AS:
+    def __getitem__(self, key: int) -> AS | None:
         pass
 
     @overload
     def __getitem__(self, key: slice) -> "ASPath":
         pass
 
-    def __getitem__(self, key: int | slice) -> AS | "ASPath":
+    def __getitem__(self, key: int | slice) -> AS | "ASPath" | None:
         if isinstance(key, slice):
             return ASPath(self._path[key])
 
-        return self._path[key]
+        try:
+            return self._path[key]
+        except IndexError:
+            return None
 
     def peek(self) -> AS | None:
         """Gets the first AS of the AS path.
@@ -121,6 +124,9 @@ class ASPath:
 
     def append(self, _as: AS) -> "ASPath":
         """Appends an AS to the beggining of the AS path.
+
+        Args:
+            _as: The autonomous system to append to the path.
 
         Returns: A new AS path with the appended AS.
         """

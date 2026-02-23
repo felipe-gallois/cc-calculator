@@ -3,7 +3,6 @@
 from abc import ABC, abstractmethod
 from collections import deque
 from collections.abc import Iterable
-from dataclasses import dataclass
 
 from cc_calc.autonomous_system import AS, ASPath
 from cc_calc.ip_prefix import IPv4Prefix, IPv6Prefix
@@ -90,16 +89,36 @@ class AdjRIBLoader(ABC):
 
 
 class ASPathEstimator(ABC):
+    """An abstract path estimator class."""
+
     @abstractmethod
     def fit(
         self,
         as_rel_graph: ASRelGraph,
         known_paths: Iterable[ASPath],
     ) -> None:
+        """Fits the estimator to the provided data.
+
+        The estimator calculates the AS paths from every AS to some prefix.
+
+        Args:
+            as_rel_graph: An AS relationship graph.
+            known_paths: A collection of Adj-RIB-In path announcements.
+        """
         pass
 
     @abstractmethod
     def predict(self, src_as: AS) -> ASPath:
+        """Predicts the AS path to the fitted prefix, from the provided AS.
+
+        Args:
+            src_as: The source autonomous system.
+
+        Returns: The predicted AS path.
+
+        Raises:
+            ASPathEstimationError: If there is some error during prediction.
+        """
         pass
 
 
@@ -108,7 +127,10 @@ def _collect_base_as_set(known_paths: Iterable[ASPath]) -> set[AS]:
 
 
 class SimpleASPathEstimator(ASPathEstimator):
+    """A simple implementation of an AS path estimator."""
+
     def __init__(self) -> None:
+        """Initializes the object."""
         self._rib_manager = SimpleLocRIBManager()
 
     def fit(
@@ -116,6 +138,14 @@ class SimpleASPathEstimator(ASPathEstimator):
         as_rel_graph: ASRelGraph,
         known_paths: Iterable[ASPath],
     ) -> None:
+        """Fits the estimator to the provided data.
+
+        The estimator calculates the AS paths from every AS to some prefix.
+
+        Args:
+            as_rel_graph: An AS relationship graph.
+            known_paths: A collection of Adj-RIB-In path announcements.
+        """
         update_queue: deque[AS] = deque()
 
         self._insert_sure_paths(known_paths)
@@ -129,10 +159,7 @@ class SimpleASPathEstimator(ASPathEstimator):
 
             appended_path = as_path.append(updated_as)
 
-            try:
-                prev_as = as_path[0]
-            except IndexError:
-                prev_as = None
+            prev_as = as_path[0]
 
             peers = as_rel_graph.bgp_receivers_from_as(updated_as, prev_as)
 
@@ -143,6 +170,16 @@ class SimpleASPathEstimator(ASPathEstimator):
                     update_queue.append(peer)
 
     def predict(self, src_as: AS) -> ASPath:
+        """Predicts the AS path to the fitted prefix, from the provided AS.
+
+        Args:
+            src_as: The source autonomous system.
+
+        Returns: The predicted AS path.
+
+        Raises:
+            ASPathEstimationError: If no path to the prefix is predicted from the AS.
+        """
         try:
             return self._rib_manager.best_path(src_as)
         except LocRIBManagerError as e:

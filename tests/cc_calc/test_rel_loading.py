@@ -5,7 +5,7 @@ import pytest
 
 from cc_calc.autonomous_system import AS
 from cc_calc.bgp_simulation import ASRelGraphError
-from cc_calc.rel_loading import CaidaRelLoader, NetworkXRelGraph
+from cc_calc.rel_loading import CaidaRelLoader, NetworkXRelGraph, _RelType
 
 
 def as_set(str_set: set[str]) -> set[AS]:
@@ -32,8 +32,14 @@ class TestListPathReceivers:
     @pytest.mark.parametrize(
         "topology, receivers",
         [
-            ([("1", "2", {"type": "peer"})], {"2"}),
-            ([("1", "2", {"type": "peer"}), ("1", "3", {"type": "peer"})], {"2", "3"}),
+            ([("1", "2", {"type": _RelType.PEER})], {"2"}),
+            (
+                [
+                    ("1", "2", {"type": _RelType.PEER}),
+                    ("1", "3", {"type": _RelType.PEER}),
+                ],
+                {"2", "3"},
+            ),
         ],
     )
     def test_when_originates_new_path_propagate_to_all(
@@ -46,10 +52,34 @@ class TestListPathReceivers:
     @pytest.mark.parametrize(
         "topology, receivers",
         [
-            ([("1", "2", {"type": "peer"}), ("2", "3", {"type": "peer"})], set()),
-            ([("1", "2", {"type": "peer"}), ("2", "3", {"type": "provider"})], {"3"}),
-            ([("1", "2", {"type": "peer"}), ("2", "3", {"type": "customer"})], set()),
-            ([("1", "2", {"type": "customer"}), ("2", "3", {"type": "peer"})], {"3"}),
+            (
+                [
+                    ("1", "2", {"type": _RelType.PEER}),
+                    ("2", "3", {"type": _RelType.PEER}),
+                ],
+                set(),
+            ),
+            (
+                [
+                    ("1", "2", {"type": _RelType.PEER}),
+                    ("2", "3", {"type": _RelType.PROVIDER}),
+                ],
+                {"3"},
+            ),
+            (
+                [
+                    ("1", "2", {"type": _RelType.PEER}),
+                    ("2", "3", {"type": _RelType.CUSTOMER}),
+                ],
+                set(),
+            ),
+            (
+                [
+                    ("1", "2", {"type": _RelType.CUSTOMER}),
+                    ("2", "3", {"type": _RelType.PEER}),
+                ],
+                {"3"},
+            ),
         ],
     )
     def test_when_receives_prefix_from_third_party_propagate_according_to_valley_free(
@@ -94,11 +124,14 @@ class TestLoadCaidaRels:
         [
             (
                 "12|12345|-1|bgp",
-                {("12", "12345", "provider"), ("12345", "12", "customer")},
+                {
+                    ("12", "12345", _RelType.PROVIDER),
+                    ("12345", "12", _RelType.CUSTOMER),
+                },
             ),
             (
                 "12|12345|0|bgp",
-                {("12", "12345", "peer"), ("12345", "12", "peer")},
+                {("12", "12345", _RelType.PEER), ("12345", "12", _RelType.PEER)},
             ),
         ],
     )

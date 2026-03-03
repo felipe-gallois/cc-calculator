@@ -32,7 +32,7 @@ class Country:
 
 class CountryPath:
     def __init__(self, path: Sequence[Country]) -> None:
-        self._path = list(
+        self._path = tuple(
             chain(
                 path[0:1], [curr for prev, curr in zip(path, path[1:]) if curr != prev]
             )
@@ -46,6 +46,9 @@ class CountryPath:
             return False
 
         return self._path == other._path
+
+    def __hash__(self) -> int:
+        return hash(self._path)
 
     def __repr__(self) -> str:
         country_repr_list = [repr(country) for country in self._path]

@@ -1,3 +1,4 @@
+from collections import Counter
 from collections.abc import Iterator
 from dataclasses import dataclass
 from typing import overload
@@ -62,23 +63,51 @@ class AnnotatedTraceroute:
 
     @property
     def ingress_indices(self) -> list[int]:
-        return [idx for idx in range(1, len(self)) if self[idx] != self[idx - 1]]
+        return [
+            idx for idx in range(1, len(self)) if self[idx]._as != self[idx - 1]._as
+        ]
 
 
 class AnnotatedTracerouteList:
     def __init__(self) -> None:
         self._ingress_map: dict[
-            tuple[IPv4Address, AS], tuple[CountryPath, IPv4Address]
+            tuple[IPv4Address, AS], Counter[tuple[CountryPath, IPv4Address]]
         ] = dict()
 
+        self._default_map: dict[AS, Counter[tuple[CountryPath, IPv4Address]]] = dict()
+
     def add_annotated_traceroute(self, trace: AnnotatedTraceroute) -> None:
+        self._add_traceroute_to_ingress_map(trace)
+        self._add_traceroute_to_default_map(trace)
+
+    def path_from_ingress(
+        self, ingress: IPv4Address, dst_as: AS
+    ) -> tuple[CountryPath | None, IPv4Address | None]:
+        try:
+            counter = self._ingress_map[(ingress, dst_as)]
+            path, new_ingress = counter.most_common(1)[0][0]
+            return path, new_ingress
+        except (KeyError, IndexError):
+            return None, None
+
+    def path_to_as(self, dst_as: AS) -> tuple[CountryPath | None, IPv4Address | None]:
+        try:
+            counter = self._default_map[dst_as]
+            path, new_ingress = counter.most_common(1)[0][0]
+            return path, new_ingress
+        except (KeyError, IndexError):
+            return None, None
+
+    def _add_traceroute_to_ingress_map(self, trace: AnnotatedTraceroute) -> None:
         ingress_indices = trace.ingress_indices
 
         for i, ingress_idx in enumerate(ingress_indices):
             for new_ingress_idx in ingress_indices[i + 1 :]:
                 ingress = trace[ingress_idx]
                 new_ingress = trace[new_ingress_idx]
-                self._ingress_map[(ingress.address, new_ingress._as)] = (
+
+                key = (ingress.address, new_ingress._as)
+                value = (
                     CountryPath(
                         [
                             hop.country
@@ -88,11 +117,35 @@ class AnnotatedTracerouteList:
                     new_ingress.address,
                 )
 
-    def path_from_ingress(
-        self, ingress: IPv4Address, dst_as: AS
-    ) -> tuple[CountryPath | None, IPv4Address | None]:
+                self._add_ingress_map_entry(key, value)
+
+    def _add_traceroute_to_default_map(self, trace: AnnotatedTraceroute) -> None:
+        for ingress_idx in trace.ingress_indices:
+            ingress = trace[ingress_idx]
+
+            key = ingress._as
+            value = (CountryPath([ingress.country]), ingress.address)
+
+            self._add_default_map_entry(key, value)
+
+    def _add_ingress_map_entry(
+        self, key: tuple[IPv4Address, AS], value: tuple[CountryPath, IPv4Address]
+    ) -> None:
         try:
-            path, new_ingress = self._ingress_map[(ingress, dst_as)]
-            return path, new_ingress
+            counter = self._ingress_map[key]
         except KeyError:
-            return None, None
+            counter = Counter()
+            self._ingress_map[key] = counter
+        finally:
+            counter[value] += 1
+
+    def _add_default_map_entry(
+        self, key: AS, value: tuple[CountryPath, IPv4Address]
+    ) -> None:
+        try:
+            counter = self._default_map[key]
+        except KeyError:
+            counter = Counter()
+            self._default_map[key] = counter
+        finally:
+            counter[value] += 1

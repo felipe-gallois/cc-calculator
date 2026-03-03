@@ -101,23 +101,19 @@ class AnnotatedTracerouteList:
     def _add_traceroute_to_ingress_map(self, trace: AnnotatedTraceroute) -> None:
         ingress_indices = trace.ingress_indices
 
-        for i, ingress_idx in enumerate(ingress_indices):
-            for new_ingress_idx in ingress_indices[i + 1 :]:
-                ingress = trace[ingress_idx]
-                new_ingress = trace[new_ingress_idx]
+        for ingress_idx, next_ingress_idx in zip(ingress_indices, ingress_indices[1:]):
+            ingress = trace[ingress_idx]
+            new_ingress = trace[next_ingress_idx]
 
-                key = (ingress.address, new_ingress._as)
-                value = (
-                    CountryPath(
-                        [
-                            hop.country
-                            for hop in trace[ingress_idx : new_ingress_idx + 1]
-                        ]
-                    ),
-                    new_ingress.address,
-                )
+            key = (ingress.address, new_ingress._as)
+            value = (
+                CountryPath(
+                    [hop.country for hop in trace[ingress_idx : next_ingress_idx + 1]]
+                ),
+                new_ingress.address,
+            )
 
-                self._add_ingress_map_entry(key, value)
+            self._add_ingress_map_entry(key, value)
 
     def _add_traceroute_to_default_map(self, trace: AnnotatedTraceroute) -> None:
         for ingress_idx in trace.ingress_indices:

@@ -105,11 +105,11 @@ class TestSearchPathByIngressPoint:
         assert path is None
         assert new_ingress is None
 
-    def test_when_traceroute_is_known_returns_none_for_previous_as(
-        self, traceroute_one: AnnotatedTraceroute
+    @pytest.mark.parametrize("dst_as", [AS(65536), AS(65539)])
+    def test_when_traceroute_is_known_returns_none_for_ases_other_than_next(
+        self, dst_as: AS, traceroute_one: AnnotatedTraceroute
     ) -> None:
         ingress = IPv4Address("198.51.100.1")
-        dst_as = AS(65536)
 
         list = AnnotatedTracerouteList()
         list.add_annotated_traceroute(traceroute_one)
@@ -126,7 +126,7 @@ class TestSearchPathByIngressPoint:
         traceroute_three: AnnotatedTraceroute,
     ) -> None:
         ingress = IPv4Address("198.51.100.1")
-        dst_as = AS(65539)
+        dst_as = AS(65538)
 
         list = AnnotatedTracerouteList()
         list.add_annotated_traceroute(traceroute_one)
@@ -136,7 +136,7 @@ class TestSearchPathByIngressPoint:
         path, new_ingress = list.path_from_ingress(ingress, dst_as)
 
         assert path == CountryPath([Country("US"), Country("BR")])
-        assert new_ingress == IPv4Address("203.0.113.3")
+        assert new_ingress == IPv4Address("203.0.113.1")
 
 
 class TestSearchPathToAS:

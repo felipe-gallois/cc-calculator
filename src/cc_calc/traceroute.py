@@ -91,56 +91,29 @@ class AnnotatedTracerouteList:
     def path_from_ingress(
         self, ingress: IPv4Address, dst_as: AS
     ) -> tuple[CountryPath | None, IPv4Address | None]:
-        try:
-            counter = self._ingress_map[(ingress, dst_as)]
-            path, new_ingress = counter.most_common(1)[0][0]
-            return path, new_ingress
-        except (KeyError, IndexError):
-            return None, None
+        return self._get_map_entry(self._ingress_map, (ingress, dst_as))
 
     def path_from_as_and_country(
         self, src_as: AS, country: Country, dst_as: AS
     ) -> tuple[CountryPath | None, IPv4Address | None]:
-        try:
-            counter = self._as_country_map[(src_as, country, dst_as)]
-            path, new_ingress = counter.most_common(1)[0][0]
-            return path, new_ingress
-        except (KeyError, IndexError):
-            return None, None
+        return self._get_map_entry(self._as_country_map, (src_as, country, dst_as))
 
     def path_from_as(
         self, src_as: AS, dst_as: AS
     ) -> tuple[CountryPath | None, IPv4Address | None]:
-        try:
-            counter = self._as_map[(src_as, dst_as)]
-            path, new_ingress = counter.most_common(1)[0][0]
-            return path, new_ingress
-        except (KeyError, IndexError):
-            return None, None
+        return self._get_map_entry(self._as_map, (src_as, dst_as))
 
     def path_from_country(
         self, country: Country, dst_as: AS
     ) -> tuple[CountryPath | None, IPv4Address | None]:
-        try:
-            counter = self._country_map[(country, dst_as)]
-            path, new_ingress = counter.most_common(1)[0][0]
-            return path, new_ingress
-        except (KeyError, IndexError):
-            return None, None
+        return self._get_map_entry(self._country_map, (country, dst_as))
 
     def path_to_as(self, dst_as: AS) -> tuple[CountryPath | None, IPv4Address | None]:
-        try:
-            counter = self._default_map[dst_as]
-            path, new_ingress = counter.most_common(1)[0][0]
-            return path, new_ingress
-        except (KeyError, IndexError):
-            return None, None
+        return self._get_map_entry(self._default_map, dst_as)
 
     def add_annotated_traceroute(self, trace: AnnotatedTraceroute) -> None:
         self._add_traceroute_to_ingress_map(trace)
-        self._add_traceroute_to_as_country_map(trace)
-        self._add_traceroute_to_as_map(trace)
-        self._add_traceroute_to_country_map(trace)
+        self._add_traceroute_to_as_and_country_maps(trace)
         self._add_traceroute_to_default_map(trace)
 
     def _add_traceroute_to_ingress_map(self, trace: AnnotatedTraceroute) -> None:
@@ -158,9 +131,11 @@ class AnnotatedTracerouteList:
                 next_ingress.address,
             )
 
-            self._add_ingress_map_entry(key, value)
+            self._add_map_entry(self._ingress_map, key, value)
 
-    def _add_traceroute_to_as_country_map(self, trace: AnnotatedTraceroute) -> None:
+    def _add_traceroute_to_as_and_country_maps(
+        self, trace: AnnotatedTraceroute
+    ) -> None:
         ingress_indices = trace.ingress_indices
         egress_indices = map(lambda x: x - 1, ingress_indices)
 
@@ -168,7 +143,6 @@ class AnnotatedTracerouteList:
             egress = trace[egress_idx]
             next_ingress = trace[next_ingress_idx]
 
-            key = (egress._as, egress.country, next_ingress._as)
             value = (
                 CountryPath(
                     [hop.country for hop in trace[egress_idx : next_ingress_idx + 1]]
@@ -176,43 +150,17 @@ class AnnotatedTracerouteList:
                 next_ingress.address,
             )
 
-            self._add_as_country_map_entry(key, value)
+            self._add_map_entry(self._as_map, (egress._as, next_ingress._as), value)
 
-    def _add_traceroute_to_as_map(self, trace: AnnotatedTraceroute) -> None:
-        ingress_indices = trace.ingress_indices
-        egress_indices = map(lambda x: x - 1, ingress_indices)
-
-        for egress_idx, next_ingress_idx in zip(egress_indices, ingress_indices):
-            egress = trace[egress_idx]
-            next_ingress = trace[next_ingress_idx]
-
-            key = (egress._as, next_ingress._as)
-            value = (
-                CountryPath(
-                    [hop.country for hop in trace[egress_idx : next_ingress_idx + 1]]
-                ),
-                next_ingress.address,
+            self._add_map_entry(
+                self._country_map, (egress.country, next_ingress._as), value
             )
 
-            self._add_as_map_entry(key, value)
-
-    def _add_traceroute_to_country_map(self, trace: AnnotatedTraceroute) -> None:
-        ingress_indices = trace.ingress_indices
-        egress_indices = map(lambda x: x - 1, ingress_indices)
-
-        for egress_idx, next_ingress_idx in zip(egress_indices, ingress_indices):
-            egress = trace[egress_idx]
-            next_ingress = trace[next_ingress_idx]
-
-            key = (egress.country, next_ingress._as)
-            value = (
-                CountryPath(
-                    [hop.country for hop in trace[egress_idx : next_ingress_idx + 1]]
-                ),
-                next_ingress.address,
+            self._add_map_entry(
+                self._as_country_map,
+                (egress._as, egress.country, next_ingress._as),
+                value,
             )
-
-            self._add_country_map_entry(key, value)
 
     def _add_traceroute_to_default_map(self, trace: AnnotatedTraceroute) -> None:
         for ingress_idx in trace.ingress_indices:
@@ -221,59 +169,23 @@ class AnnotatedTracerouteList:
             key = ingress._as
             value = (CountryPath([ingress.country]), ingress.address)
 
-            self._add_default_map_entry(key, value)
+            self._add_map_entry(self._default_map, key, value)
 
-    def _add_ingress_map_entry(
-        self, key: tuple[IPv4Address, AS], value: tuple[CountryPath, IPv4Address]
-    ) -> None:
+    def _get_map_entry[T](
+        self, map: dict[T, Counter[tuple[CountryPath, IPv4Address]]], key: T
+    ) -> tuple[CountryPath | None, IPv4Address | None]:
         try:
-            counter = self._ingress_map[key]
+            counter = map[key]
+            path, new_ingress = counter.most_common(1)[0][0]
+            return path, new_ingress
+        except (KeyError, IndexError):
+            return None, None
+
+    def _add_map_entry[S, T](self, map: dict[S, Counter[T]], key: S, value: T) -> None:
+        try:
+            counter = map[key]
         except KeyError:
             counter = Counter()
-            self._ingress_map[key] = counter
-        finally:
-            counter[value] += 1
-
-    def _add_as_country_map_entry(
-        self, key: tuple[AS, Country, AS], value: tuple[CountryPath, IPv4Address]
-    ) -> None:
-        try:
-            counter = self._as_country_map[key]
-        except KeyError:
-            counter = Counter()
-            self._as_country_map[key] = counter
-        finally:
-            counter[value] += 1
-
-    def _add_as_map_entry(
-        self, key: tuple[AS, AS], value: tuple[CountryPath, IPv4Address]
-    ) -> None:
-        try:
-            counter = self._as_map[key]
-        except KeyError:
-            counter = Counter()
-            self._as_map[key] = counter
-        finally:
-            counter[value] += 1
-
-    def _add_country_map_entry(
-        self, key: tuple[Country, AS], value: tuple[CountryPath, IPv4Address]
-    ) -> None:
-        try:
-            counter = self._country_map[key]
-        except KeyError:
-            counter = Counter()
-            self._country_map[key] = counter
-        finally:
-            counter[value] += 1
-
-    def _add_default_map_entry(
-        self, key: AS, value: tuple[CountryPath, IPv4Address]
-    ) -> None:
-        try:
-            counter = self._default_map[key]
-        except KeyError:
-            counter = Counter()
-            self._default_map[key] = counter
+            map[key] = counter
         finally:
             counter[value] += 1

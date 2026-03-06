@@ -14,3 +14,6 @@ class ASCountryMap:
             map: A dict mapping ASes to countries.
         """
         self._map = map
+
+    def __getitem__(self, key: AS) -> Country:
+        return self._map[key]

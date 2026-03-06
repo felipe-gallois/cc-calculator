@@ -1,6 +1,9 @@
 """Country object and utilities."""
 
+from abc import ABC
 from collections.abc import Iterator, Sequence
+from copy import copy
+from dataclasses import dataclass
 from itertools import chain
 from typing import overload
 
@@ -44,6 +47,20 @@ class Country:
         return self._alpha2
 
 
+@dataclass
+class CountryPathEvent(ABC):
+    """Generic country path event."""
+
+    pass
+
+
+@dataclass
+class UnknownCountryEvent(CountryPathEvent):
+    """When at least one of the countries of the country sequence is unknown (None)."""
+
+    pass
+
+
 class CountryPath:
     """A country path.
 
@@ -52,15 +69,40 @@ class CountryPath:
     not.
     """
 
-    def __init__(self, seq: Sequence[Country]) -> None:
+    def __init__(self, seq: Sequence[Country | None]) -> None:
         """Initializes a CountryPath.
 
         Args:
-            seq: A sequence of countries from which to build the path.
+            seq: A sequence of countries from which to build the path. None is a valid
+            sequence element, and represents an unknown country.
         """
-        self._path = tuple(
-            chain(seq[0:1], [curr for prev, curr in zip(seq, seq[1:]) if curr != prev])
-        )
+        self._path: tuple[Country, ...]
+
+        match len(seq):
+            case 0:
+                self._path = ()
+            case 1:
+                self._path = () if seq[0] is None else (seq[0],)
+            case _:
+                country_seq: list[Country] = [
+                    country for country in seq if country is not None
+                ]
+
+                self._path = tuple(
+                    chain(
+                        country_seq[:1],
+                        [
+                            curr
+                            for prev, curr in zip(country_seq, country_seq[1:])
+                            if curr != prev
+                        ],
+                    )
+                )
+
+        self._events: list[CountryPathEvent] = []
+
+        if None in seq:
+            self._events.append(UnknownCountryEvent())
 
     def __len__(self) -> int:
         return len(self._path)
@@ -76,7 +118,7 @@ class CountryPath:
 
     def __repr__(self) -> str:
         country_repr_list = [repr(country) for country in self._path]
-        return f"CountryPath([{', '.join(country_repr_list)}])"
+        return f"CountryPath(({', '.join(country_repr_list)}))"
 
     def __iter__(self) -> Iterator[Country]:
         for country in self._path:
@@ -98,3 +140,12 @@ class CountryPath:
             return self._path[key]
         except IndexError:
             return None
+
+    @property
+    def events(self) -> list[CountryPathEvent]:
+        """The events collected by this object."""
+        return copy(self._events)
+
+    def clear_events(self) -> None:
+        """Clears the event list of this object."""
+        self._events.clear()

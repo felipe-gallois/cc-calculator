@@ -1,6 +1,6 @@
 import pytest
 
-from cc_calc.country import Country, CountryError, CountryPath
+from cc_calc.country import Country, CountryError, CountryPath, UnknownCountryEvent
 
 
 class TestCreateCountry:
@@ -41,6 +41,25 @@ class TestCompareCountry:
         country_b = Country("US")
 
         assert country_a == country_b
+
+
+class TestCreateCountryPath:
+    def test_when_sequence_has_none_ignores_unknown_countries(self) -> None:
+        path = CountryPath([Country("CA"), None, Country("BR")])
+        expected_path = CountryPath([Country("CA"), Country("BR")])
+        assert path == expected_path
+
+    def test_when_sequence_has_none_adds_unknown_country_event(self) -> None:
+        path = CountryPath([Country("CA"), None, Country("BR")])
+        assert UnknownCountryEvent() in path.events
+
+    def test_when_sequence_does_not_have_none_does_not_add_event(self) -> None:
+        path = CountryPath([Country("CA")])
+        assert UnknownCountryEvent() not in path.events
+
+    def test_when_sequence_only_has_none_returns_empty_path(self) -> None:
+        path = CountryPath([None])
+        assert path == CountryPath([])
 
 
 class TestIterateCountryPath:

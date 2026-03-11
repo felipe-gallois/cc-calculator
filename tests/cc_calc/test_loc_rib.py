@@ -1,6 +1,7 @@
 import pytest
 
-from cc_calc.autonomous_system import AS, ASPath
+from cc_calc.as_path import ASPath
+from cc_calc.autonomous_system import AS
 from cc_calc.loc_rib import LocRIBManagerError, SimpleLocRIBManager
 
 

@@ -4,9 +4,10 @@ from abc import ABC, abstractmethod
 from collections import deque
 from collections.abc import Iterable
 
-from cc_calc.autonomous_system import AS, ASPath
-from cc_calc.ip_prefix import IPv4Prefix, IPv6Prefix
+from cc_calc.as_path import ASPath
+from cc_calc.autonomous_system import AS
 from cc_calc.loc_rib import LocRIBManagerError, SimpleLocRIBManager
+from cc_calc.prefix_sure_as_path_list import PrefixSureASPathList
 
 
 class ASRelGraphError(Exception):
@@ -17,12 +18,6 @@ class ASRelGraphError(Exception):
 
 class ASRelLoadingError(Exception):
     """Any error raised by an AS relationship loader."""
-
-    pass
-
-
-class RIBLoadingError(Exception):
-    """Any error raised by an RIB loader."""
 
     pass
 
@@ -73,60 +68,11 @@ class ASRelLoader(ABC):
         pass
 
 
-class AdjRIBLoader(ABC):
-    """An abstraction for a Adj-RIB-In entry loader."""
-
-    @abstractmethod
-    def load_prefix_paths(self) -> dict[IPv4Prefix | IPv6Prefix, set[ASPath]]:
-        """Loads Adj-RIB-In entries from a file and maps prefixes to announced paths.
-
-        Returns: A dict, mapping IP prefixes to AS paths that lead to them.
-
-        Raises:
-            RIBLoadingError: If the dump file cannot be read.
-        """
-        pass
-
-
-class ASPathEstimator(ABC):
-    """An abstract path estimator class."""
-
-    @abstractmethod
-    def fit(
-        self,
-        as_rel_graph: ASRelGraph,
-        known_paths: Iterable[ASPath],
-    ) -> None:
-        """Fits the estimator to the provided data.
-
-        The estimator calculates the AS paths from every AS to some prefix.
-
-        Args:
-            as_rel_graph: An AS relationship graph.
-            known_paths: A collection of Adj-RIB-In path announcements.
-        """
-        pass
-
-    @abstractmethod
-    def predict(self, src_as: AS) -> ASPath:
-        """Predicts the AS path to the fitted prefix, from the provided AS.
-
-        Args:
-            src_as: The source autonomous system.
-
-        Returns: The predicted AS path.
-
-        Raises:
-            ASPathEstimationError: If there is some error during prediction.
-        """
-        pass
-
-
 def _collect_base_as_set(known_paths: Iterable[ASPath]) -> set[AS]:
     return {_as for path in known_paths for _as in path}
 
 
-class SimpleASPathEstimator(ASPathEstimator):
+class SimpleASPathEstimator:
     """A simple implementation of an AS path estimator."""
 
     def __init__(self) -> None:
@@ -136,7 +82,7 @@ class SimpleASPathEstimator(ASPathEstimator):
     def fit(
         self,
         as_rel_graph: ASRelGraph,
-        known_paths: Iterable[ASPath],
+        sure_paths: PrefixSureASPathList,
     ) -> None:
         """Fits the estimator to the provided data.
 
@@ -144,13 +90,13 @@ class SimpleASPathEstimator(ASPathEstimator):
 
         Args:
             as_rel_graph: An AS relationship graph.
-            known_paths: A collection of Adj-RIB-In path announcements.
+            sure_paths: A list of sure AS paths to a prefix.
         """
         update_queue: deque[AS] = deque()
 
-        self._insert_sure_paths(known_paths)
+        self._insert_sure_paths(sure_paths)
 
-        for _as in _collect_base_as_set(known_paths):
+        for _as in _collect_base_as_set(sure_paths):
             update_queue.append(_as)
 
         while len(update_queue) != 0:
@@ -185,6 +131,6 @@ class SimpleASPathEstimator(ASPathEstimator):
         except LocRIBManagerError as e:
             raise ASPathEstimationError(f"{src_as} was not fitted") from e
 
-    def _insert_sure_paths(self, known_paths: Iterable[ASPath]) -> None:
-        for path in known_paths:
+    def _insert_sure_paths(self, sure_paths: Iterable[ASPath]) -> None:
+        for path in sure_paths:
             self._rib_manager.eval_sure_path_recursively(path)

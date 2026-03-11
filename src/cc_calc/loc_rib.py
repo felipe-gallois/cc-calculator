@@ -2,7 +2,8 @@
 
 from dataclasses import dataclass
 
-from cc_calc.autonomous_system import AS, ASPath
+from cc_calc.as_path import ASPath
+from cc_calc.autonomous_system import AS
 
 
 class LocRIBManagerError(Exception):

@@ -1,5 +1,6 @@
 from cc_calc.as_country_map import ASCountryMap
-from cc_calc.autonomous_system import AS, ASPath
+from cc_calc.as_path import ASPath
+from cc_calc.autonomous_system import AS
 from cc_calc.country import Country, CountryPath
 from cc_calc.country_path_estimation import CountryPathEstimation
 

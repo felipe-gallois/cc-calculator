@@ -20,6 +20,11 @@ class PrefixSureASPathList:
         for path in self._path_set:
             yield path
 
+    @property
+    def prefix(self) -> IPPrefix:
+        """The prefix where the AS paths lead to."""
+        return self._prefix
+
     def add_path(self, path: ASPath) -> None:
         """Adds a path to the list.
 

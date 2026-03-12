@@ -1,82 +1,22 @@
 """Loading of autonomous systems' relationships."""
 
 import bz2
-from enum import Enum, auto
 from os import PathLike
-from typing import Any, Iterable, TextIO
+from typing import Iterable, TextIO
 
 import networkx as nx
 
+from cc_calc.as_rel_graph import ASRelGraph, ASRelGraphRepository, _RelType  # FIXME
 from cc_calc.autonomous_system import AS
-from cc_calc.bgp_simulation import (
-    ASRelGraph,
-    ASRelGraphError,
-    ASRelLoader,
-    ASRelLoadingError,
-)
 
 
-class _RelType(Enum):
-    CUSTOMER = auto()
-    PROVIDER = auto()
-    PEER = auto()
+class ASRelLoadingError(Exception):
+    """Any error raised by an AS relationship loader."""
+
+    pass
 
 
-class NetworkXRelGraph(ASRelGraph):
-    """A wrapper for a NetworkX digraph of autonomous systems and relationship types."""
-
-    def __init__(self, digraph: nx.DiGraph[AS]) -> None:
-        """Initializes the wrapper.
-
-        Args:
-            digraph: The internal digraph.
-        """
-        self._digraph = digraph
-
-    def bgp_receivers_from_as(
-        self, curr_as: int | str | AS, prev_as: int | str | AS | None = None
-    ) -> set[AS]:
-        """Collects ASes that receive BGP path announcements from an AS.
-
-        The ASes are collected according to the valley-free rule.
-
-        Args:
-            curr_as: The AS whose neighbors are being collected.
-            prev_as: The AS that announced the path to curr_as (necessary to calculate
-                     the valley-free rule).
-
-        Returns: A set of autonomous systems.
-
-        Raises:
-            ASRelGraphError: If curr_as is not in the graph.
-        """
-        if not isinstance(curr_as, AS):
-            curr_as = AS(curr_as)
-
-        succ = self._successors(curr_as)
-
-        if not prev_as:
-            return succ
-
-        if not isinstance(prev_as, AS):
-            prev_as = AS(prev_as)
-
-        if self._as_rel(prev_as, curr_as) == _RelType.CUSTOMER:
-            return succ
-
-        return {s for s in succ if self._as_rel(curr_as, s) == _RelType.PROVIDER}
-
-    def _successors(self, as_: AS) -> set[AS]:
-        try:
-            return set(self._digraph.successors(as_))
-        except nx.NetworkXError as e:
-            raise ASRelGraphError(f"{as_} is not in the graph") from e
-
-    def _as_rel(self, src_as: AS, dst_as: AS) -> Any:
-        return self._digraph.edges[(src_as, dst_as)]["type"]
-
-
-class CaidaRelLoader(ASRelLoader):
+class CaidaRelLoader(ASRelGraphRepository):
     """Autonomous system relationship loader for the CAIDA AS Relationships Dataset."""
 
     def __init__(self, path: str | PathLike[str]) -> None:
@@ -87,7 +27,7 @@ class CaidaRelLoader(ASRelLoader):
         """
         self._path = path
 
-    def load_rel_graph(self) -> NetworkXRelGraph:
+    def load_rel_graph(self) -> ASRelGraph:
         """Loads autonomous system relationships from CAIDA's dataset.
 
         Returns:
@@ -101,7 +41,7 @@ class CaidaRelLoader(ASRelLoader):
         try:
             with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
                 digraph = self._build_graph(text)
-                return NetworkXRelGraph(digraph)
+                return ASRelGraph(digraph)
         except Exception as e:
             raise ASRelLoadingError("Could not read input file") from e
 

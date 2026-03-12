@@ -2,21 +2,15 @@ import pytest
 from pytest_mock import MockerFixture
 
 from cc_calc.as_path import ASPath
+from cc_calc.as_rel_graph import ASRelGraph
 from cc_calc.autonomous_system import AS
-from cc_calc.bgp_simulation import (
-    ASPathEstimationError,
-    ASRelGraph,
-    SimpleASPathEstimator,
-)
 from cc_calc.ip_prefix import IPPrefix
+from cc_calc.loc_rib_model import LocRIBModelError
+from cc_calc.loc_rib_prediction import predict_loc_rib_model
 from cc_calc.prefix_sure_as_path_list import PrefixSureASPathList
 
 
-class TestEstimateASPath:
-    @pytest.fixture
-    def estimator(self) -> SimpleASPathEstimator:
-        return SimpleASPathEstimator()
-
+class TestPredictLocRIBModel:
     @pytest.fixture
     def dummy_path_list_one(self) -> PrefixSureASPathList:
         return PrefixSureASPathList(
@@ -33,22 +27,15 @@ class TestEstimateASPath:
             },
         )
 
-    def test_when_not_fitted_prediction_raises_exception(
-        self, estimator: SimpleASPathEstimator
-    ) -> None:
-        with pytest.raises(ASPathEstimationError):
-            estimator.predict(AS(65536))
-
     def test_when_single_path_is_known_predicts_paths_for_every_as_in_it(
         self,
-        estimator: SimpleASPathEstimator,
         dummy_path_list_one: PrefixSureASPathList,
         mocker: MockerFixture,
     ) -> None:
         as_rel_stub = mocker.create_autospec(ASRelGraph)
         as_rel_stub.bgp_receivers_from_as.return_value = set()
 
-        estimator.fit(as_rel_stub, dummy_path_list_one)
+        model = predict_loc_rib_model(as_rel_stub, dummy_path_list_one)
 
         dummy_path = ASPath((AS(65537), AS(65538), AS(65539)))
 
@@ -57,11 +44,10 @@ class TestEstimateASPath:
             expected_path = dummy_path[i + 1 :]
 
             if src_as is not None:
-                assert estimator.predict(src_as) == expected_path
+                assert model.best_path(src_as) == expected_path
 
     def test_when_there_is_peer_path_is_propagated(
         self,
-        estimator: SimpleASPathEstimator,
         dummy_path_list_one: PrefixSureASPathList,
         mocker: MockerFixture,
     ) -> None:
@@ -72,29 +58,27 @@ class TestEstimateASPath:
             lambda curr_as, prev_as: {peer_as} if curr_as == AS(65537) else set()
         )
 
-        estimator.fit(as_rel_stub, dummy_path_list_one)
+        model = predict_loc_rib_model(as_rel_stub, dummy_path_list_one)
 
         dummy_path = ASPath((AS(65537), AS(65538), AS(65539)))
 
-        assert estimator.predict(peer_as) == dummy_path
+        assert model.best_path(peer_as) == dummy_path
 
     def test_when_as_is_disconnected_path_is_not_propagated(
         self,
-        estimator: SimpleASPathEstimator,
         dummy_path_list_one: PrefixSureASPathList,
         mocker: MockerFixture,
     ) -> None:
         as_rel_stub = mocker.create_autospec(ASRelGraph)
         as_rel_stub.bgp_receivers_from_as.return_value = set()
 
-        estimator.fit(as_rel_stub, dummy_path_list_one)
+        model = predict_loc_rib_model(as_rel_stub, dummy_path_list_one)
 
-        with pytest.raises(ASPathEstimationError):
-            estimator.predict(AS(65536))
+        with pytest.raises(LocRIBModelError):
+            model.best_path(AS(65536))
 
     def test_when_there_is_a_two_peer_chain_path_is_propagated_to_the_end(
         self,
-        estimator: SimpleASPathEstimator,
         dummy_path_list_one: PrefixSureASPathList,
         mocker: MockerFixture,
     ) -> None:
@@ -112,15 +96,14 @@ class TestEstimateASPath:
         as_rel_stub = mocker.create_autospec(ASRelGraph)
         as_rel_stub.bgp_receivers_from_as.side_effect = effect
 
-        estimator.fit(as_rel_stub, dummy_path_list_one)
+        model = predict_loc_rib_model(as_rel_stub, dummy_path_list_one)
 
         dummy_path = ASPath((AS(65537), AS(65538), AS(65539)))
 
-        assert estimator.predict(peer_as_two) == dummy_path.append(peer_as_one)
+        assert model.best_path(peer_as_two) == dummy_path.append(peer_as_one)
 
     def test_after_short_and_long_path_announcements_estimator_predicts_shortest_one(
         self,
-        estimator: SimpleASPathEstimator,
         dummy_path_list_two: PrefixSureASPathList,
         mocker: MockerFixture,
     ) -> None:
@@ -131,8 +114,8 @@ class TestEstimateASPath:
             lambda curr_as, prev_as: {peer_as} if curr_as == AS(65537) else set()
         )
 
-        estimator.fit(as_rel_stub, dummy_path_list_two)
+        model = predict_loc_rib_model(as_rel_stub, dummy_path_list_two)
 
         dummy_path = ASPath((AS(65537), AS(65538), AS(65539)))
 
-        assert estimator.predict(peer_as) == dummy_path
+        assert model.best_path(peer_as) == dummy_path

@@ -31,7 +31,7 @@ def _collect_prefix_paths(
     return mappings
 
 
-class CaidaSureASPathRepository(SureASPathRepository):
+class CaidaRIBDumpRepository(SureASPathRepository):
     """A loader for sure AS paths found in CAIDA's RIB dumps."""
 
     def __init__(self, path: str | PathLike[str]) -> None:

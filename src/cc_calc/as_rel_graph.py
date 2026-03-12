@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Any
 
 import networkx as nx
 
@@ -17,22 +17,73 @@ class ASRelGraphError(Exception):
     pass
 
 
-class _RelType(Enum):
-    CUSTOMER = auto()
-    PROVIDER = auto()
-    PEER = auto()
+class ASRelGraphRepositoryError(Exception):
+    """Any error raised by an AS relationship graph repository."""
+
+    pass
+
+
+class RelType(Enum):
+    """The type of AS relationship."""
+
+    P2C = auto()
+    P2P = auto()
+
+
+@dataclass(frozen=True)
+class ASRel:
+    """An AS relationship.
+
+    Relationships are implicitly considered reciprocal. Every provider-to-client
+    relationship entails a client-to-provider counterpart. Likewise, a peer-to-peer
+    relationship goes both ways.
+
+    Attributes:
+        src_as: The source AS.
+        dst_as: The destination AS.
+        type: The relationship type.
+    """
+
+    src_as: AS
+    dst_as: AS
+    type: RelType
 
 
 class ASRelGraph:
     """A digraph of autonomous systems and relationship types."""
 
-    def __init__(self, digraph: nx.DiGraph[AS]) -> None:
+    def __init__(self) -> None:
         """Initializes the digraph.
 
         Args:
             digraph: The internal digraph.
         """
-        self._digraph = digraph
+        self._digraph: nx.DiGraph[AS] = nx.DiGraph()
+
+    @property
+    def nodes(self) -> set[AS]:
+        """The nodes of the graph."""
+        return set(self._digraph.nodes)
+
+    @property
+    def edges(self) -> set[ASRel]:
+        """The edges (relationships) of the graph."""
+        edges = set()
+
+        for src_as, dst_as, attr in self._digraph.edges(data=True):
+            rel_type = attr["type"]
+            as_rel = ASRel(src_as, dst_as, rel_type)
+            edges.add(as_rel)
+
+        return edges
+
+    def add_rel(self, rel: ASRel) -> None:
+        """Adds a relationship to the graph.
+
+        Args:
+            rel: The relationship.
+        """
+        self._digraph.add_edge(rel.src_as, rel.dst_as, type=rel.type)
 
     def bgp_receivers_from_as(
         self, curr_as: int | str | AS, prev_as: int | str | AS | None = None
@@ -54,7 +105,7 @@ class ASRelGraph:
         if not isinstance(curr_as, AS):
             curr_as = AS(curr_as)
 
-        succ = self._successors(curr_as)
+        succ = self._neighbors(curr_as)
 
         if not prev_as:
             return succ
@@ -62,32 +113,54 @@ class ASRelGraph:
         if not isinstance(prev_as, AS):
             prev_as = AS(prev_as)
 
-        if self._as_rel(prev_as, curr_as) == _RelType.CUSTOMER:
+        succ.discard(prev_as)
+
+        if self._is_customer(prev_as, curr_as):
             return succ
 
-        return {s for s in succ if self._as_rel(curr_as, s) == _RelType.PROVIDER}
+        return {s for s in succ if self._is_provider(curr_as, s)}
 
-    def _successors(self, as_: AS) -> set[AS]:
+    def _neighbors(self, as_: AS) -> set[AS]:
         try:
-            return set(self._digraph.successors(as_))
+            return set(self._digraph.neighbors(as_))
         except nx.NetworkXError as e:
             raise ASRelGraphError(f"{as_} is not in the graph") from e
 
-    def _as_rel(self, src_as: AS, dst_as: AS) -> Any:
-        return self._digraph.edges[(src_as, dst_as)]["type"]
+    def _is_provider(self, src_as: AS, dst_as: AS) -> bool:
+        provider = False
+
+        try:
+            rel_type = self._digraph.edges[(src_as, dst_as)]["type"]
+
+            if rel_type == RelType.P2C:
+                provider = True
+        except KeyError:
+            pass
+
+        return provider
+
+    def _is_customer(self, src_as: AS, dst_as: AS) -> bool:
+        customer = False
+
+        try:
+            rel_type = self._digraph.edges[(dst_as, src_as)]["type"]
+
+            if rel_type == RelType.P2C:
+                customer = True
+        except KeyError:
+            pass
+
+        return customer
 
 
 class ASRelGraphRepository(ABC):
-    """Autonomous system relationship loader."""
+    """AS relationship graph repository."""
 
     @abstractmethod
     def load_rel_graph(self) -> ASRelGraph:
-        """Loads autonomous system relationships.
+        """Loads the AS relationship graph.
 
-        Returns:
-            An ASRelGraph instance, representing a digraph in which nodes are autonomous
-            systems and arcs are relationships. The arcs are annotated with the type of
-            the relationship.
+        Returns: The relationship graph.
 
         Raises:
             ASRelLoadingException: If there is any problem reading the input file.

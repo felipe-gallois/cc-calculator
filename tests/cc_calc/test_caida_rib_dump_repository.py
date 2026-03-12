@@ -2,7 +2,7 @@ from io import StringIO
 
 from cc_calc.as_path import ASPath
 from cc_calc.autonomous_system import AS
-from cc_calc.caida_sure_as_path_repository import _collect_prefix_paths
+from cc_calc.caida_rib_dump_repository import _collect_prefix_paths
 from cc_calc.ip_prefix import IPPrefix
 
 

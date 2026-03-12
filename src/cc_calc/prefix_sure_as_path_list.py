@@ -1,9 +1,16 @@
 """List of sure AS paths to a prefix."""
 
+from abc import ABC, abstractmethod
 from collections.abc import Iterable, Iterator
 
 from cc_calc.as_path import ASPath
 from cc_calc.ip_prefix import IPPrefix
+
+
+class PrefixSureASPathListRepositoryError(Exception):
+    """Any error raised by a SureASPathRepository."""
+
+    pass
 
 
 class PrefixSureASPathList:
@@ -32,3 +39,20 @@ class PrefixSureASPathList:
             path: The path.
         """
         self._path_set.add(path)
+
+
+class PrefixSureASPathListRepository(ABC):
+    """Prefix sure AS path list repository."""
+
+    @abstractmethod
+    def load_prefix_paths(
+        self, prefixes: Iterable[IPPrefix]
+    ) -> set[PrefixSureASPathList]:
+        """Loads sure AS path lists for the input prefixes.
+
+        Returns: A set of sure AS path lists (one for each input prefix).
+
+        Raises:
+            RIBLoadingError: If the lists could not be retrieved.
+        """
+        pass

@@ -7,10 +7,10 @@ from typing import TextIO
 
 from cc_calc.as_path import ASPath
 from cc_calc.ip_prefix import IPPrefix
-from cc_calc.prefix_sure_as_path_list import PrefixSureASPathList
-from cc_calc.sure_as_path_repository import (
-    SureASPathRepository,
-    SureASPathRepositoryError,
+from cc_calc.prefix_sure_as_path_list import (
+    PrefixSureASPathList,
+    PrefixSureASPathListRepository,
+    PrefixSureASPathListRepositoryError,
 )
 
 
@@ -31,7 +31,7 @@ def _collect_prefix_paths(
     return mappings
 
 
-class CaidaRIBDumpRepository(SureASPathRepository):
+class CaidaRIBDumpRepository(PrefixSureASPathListRepository):
     """A loader for sure AS paths found in CAIDA's RIB dumps."""
 
     def __init__(self, path: str | PathLike[str]) -> None:
@@ -60,4 +60,6 @@ class CaidaRIBDumpRepository(SureASPathRepository):
                     for prefix, as_set in prefix_paths.items()
                 }
         except Exception as e:
-            raise SureASPathRepositoryError("Could not read input file") from e
+            raise PrefixSureASPathListRepositoryError(
+                "Could not read input file"
+            ) from e

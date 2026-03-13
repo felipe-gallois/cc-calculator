@@ -45,3 +45,8 @@ class IPPrefix:
 
     def __str__(self) -> str:
         return str(self._prefix)
+
+    @property
+    def address_part(self) -> str:
+        """The address part of the IP prefix."""
+        return str(self._prefix.network_address)

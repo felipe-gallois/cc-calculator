@@ -1,9 +1,9 @@
 from io import StringIO
 
-from cc_calc.as_country_map_repo import _CaidaASCountryMapMapper
+from cc_calc.caida_as_organization_repository import _text_to_asn_country_map
 
 
-def test_when_input_has_single_org_returns_correct_maps() -> None:
+def test_when_input_has_single_org_returns_correct_map() -> None:
     input = StringIO(
         "#\n"
         "# format:org_id|changed|org_name|country|source\n"
@@ -12,6 +12,6 @@ def test_when_input_has_single_org_returns_correct_maps() -> None:
         "65536|19700101|COM|@aut-65536-ARIN|1234567_ARIN|ARIN\n"
     )
 
-    asn_to_country = _CaidaASCountryMapMapper.text_to_asn_country_map(input)
+    asn_to_country = _text_to_asn_country_map(input)
 
     assert asn_to_country == {"65536": "US"}

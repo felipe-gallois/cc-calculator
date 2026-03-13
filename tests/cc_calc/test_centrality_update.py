@@ -1,7 +1,8 @@
 import math
 
 from cc_calc.centrality_update import update_centrality
-from cc_calc.country import Country, CountryPath
+from cc_calc.country import Country
+from cc_calc.country_path import CountryPath
 
 
 def test_when_path_has_no_countries_centrality_is_not_updated() -> None:

@@ -3,7 +3,7 @@
 import math
 
 from cc_calc.centrality_count import CentralityCounter
-from cc_calc.country import CountryPath
+from cc_calc.country_path import CountryPath
 
 
 def update_centrality(

@@ -1,7 +1,15 @@
 """ASCountryMap and utilities."""
 
+from abc import ABC, abstractmethod
+
 from cc_calc.autonomous_system import AS
 from cc_calc.country import Country
+
+
+class ASCountryMapRepositoryError(Exception):
+    """Any error raised by an AS-to-country map repository."""
+
+    pass
 
 
 class ASCountryMap:
@@ -17,3 +25,18 @@ class ASCountryMap:
 
     def __getitem__(self, key: AS) -> Country:
         return self._map[key]
+
+
+class ASCountryMapRepository(ABC):
+    """An AS-to-country map repository."""
+
+    @abstractmethod
+    def load_as_country_map(self) -> ASCountryMap:
+        """Loads the AS-to-country map from the repository.
+
+        Returns: The map.
+
+        Raises:
+            ASCountryMapRepositoryError: If the map cannot be loaded.
+        """
+        pass

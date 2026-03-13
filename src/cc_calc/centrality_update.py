@@ -2,15 +2,15 @@
 
 import math
 
-from cc_calc.centrality_count import CentralityCounter
+from cc_calc.centrality_table import CentralityTable
 from cc_calc.country_path import CountryPath
 
 
 def update_centrality(
     path: CountryPath,
     prefix_weights: tuple[int, int],
-    centralities: CentralityCounter | None = None,
-) -> CentralityCounter:
+    centralities: CentralityTable | None = None,
+) -> CentralityTable:
     """Updates country centrality by informing a new path.
 
     Args:
@@ -21,7 +21,7 @@ def update_centrality(
     Returns: The updated centrality counts.
     """
     if centralities is None:
-        centralities = CentralityCounter()
+        centralities = CentralityTable()
 
     if len(path) >= 3:
         origin = path[0]

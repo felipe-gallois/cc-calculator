@@ -1,4 +1,4 @@
-"""Country centrality counting."""
+"""Country centrality table."""
 
 import math
 from collections import Counter
@@ -13,8 +13,8 @@ def _norm_country(country: str | Country) -> Country:
     return country
 
 
-class CentralityCounter:
-    """A country centrality counter."""
+class CentralityTable:
+    """A country centrality table."""
 
     def __init__(self) -> None:
         self._global_centrality = 0

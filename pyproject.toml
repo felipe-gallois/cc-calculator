@@ -1,29 +1,36 @@
-[tool.poetry]
+[project]
 name = "cc-calculator"
 version = "0.1.0"
 description = "A country centrality calculator program"
-authors = ["Felipe Gallois <fgallois@inf.ufrgs.br>"]
 readme = "README.md"
-packages = [{ include = "cc_calc" }]
-include = ["cc_calc/py.typed"]
+requires-python = "~=3.14.2"
 
-[tool.poetry.dependencies]
-python = "~3.14.2"
-geoip2 = "^5.2.0"
-networkx = "^3.6.1"
+authors = [
+  { name = "Felipe Gallois", email = "fgallois@inf.ufrgs.br" }
+]
 
-[tool.poetry.group.dev.dependencies]
-ruff = "^0.14.14"
-ty = "^0.0.14"
-mypy = "^1.19.1"
-pytest = "^9.0.2"
-pytest-mock = "^3.15.1"
-pytest-cov = "^7.0.0"
-types-networkx = "^3.6.1.20251220"
+dependencies = [
+  "geoip2>=5.2.0,<6",
+  "networkx>=3.6.1,<4"
+]
+
+[dependency-groups]
+dev = [
+  "ruff>=0.14.14,<1",
+  "ty>=0.0.14,<1",
+  "mypy>=1.19.1,<2",
+  "pytest>=9.0.2,<10",
+  "pytest-mock>=3.15.1,<4",
+  "pytest-cov>=7.0.0,<8",
+  "types-networkx>=3.6.1.20251220,<4"
+]
 
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["cc_calc"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I"]

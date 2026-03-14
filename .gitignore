@@ -1,7 +1,10 @@
+# Environment
+.venv/
+
 # Editor config
 .nvim.lua
 
-# IO
+# Data
 data/
 
 # Cache

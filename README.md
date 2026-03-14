@@ -40,6 +40,6 @@ Before submitting code to this repository, run all tests and check linting and f
 ```bash
 poetry run pytest
 poetry run ruff check
-poetry run mypy --strict {src,tests}
+poetry run mypy --strict cc_calc
 poetry run ruff format --check
 ```

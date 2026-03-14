@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A country centrality calculator program"
 authors = ["Felipe Gallois <fgallois@inf.ufrgs.br>"]
 readme = "README.md"
-packages = [{ include = "cc_calc", from = "src" }]
+packages = [{ include = "cc_calc" }]
 include = ["cc_calc/py.typed"]
 
 [tool.poetry.dependencies]
@@ -26,12 +26,10 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "D"]
-ignore = ["D105", "D107"]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["D"]
-"src/**/__init__.py" = ["D"]
+select = ["E", "F", "I"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
+
+[tool.pytest.ini_options]
+testpaths = ["cc_calc"]

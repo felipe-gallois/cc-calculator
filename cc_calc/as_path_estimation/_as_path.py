@@ -3,7 +3,7 @@
 from collections.abc import Iterator, Sequence
 from typing import overload
 
-from cc_calc.as_path_estimation._autonomous_system import AS
+from cc_calc.autonomous_system import AS
 
 
 class ASPathError(Exception):

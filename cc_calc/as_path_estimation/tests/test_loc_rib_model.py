@@ -1,12 +1,12 @@
 import pytest
 
 from cc_calc.as_path_estimation import (
-    AS,
     ASPath,
     LocRIBModel,
     LocRIBModelError,
     SecondSurePathEvent,
 )
+from cc_calc.autonomous_system import AS
 from cc_calc.ip_prefix import IPPrefix
 
 

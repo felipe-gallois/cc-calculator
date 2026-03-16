@@ -4,9 +4,9 @@ from collections import deque
 
 from cc_calc.as_path_estimation._as_path import ASPath
 from cc_calc.as_path_estimation._as_rel_graph import ASRelGraph
-from cc_calc.as_path_estimation._autonomous_system import AS
 from cc_calc.as_path_estimation._loc_rib_model import LocRIBModel
 from cc_calc.as_path_estimation._prefix_sure_as_path_list import PrefixSureASPathList
+from cc_calc.autonomous_system import AS
 
 
 def _add_sure_path_recursively(path: ASPath, model: LocRIBModel) -> None:

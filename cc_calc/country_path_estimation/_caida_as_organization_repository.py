@@ -5,13 +5,13 @@ from enum import Enum, auto
 from os import PathLike
 from typing import TextIO
 
-from cc_calc.as_path_estimation import AS
+from cc_calc.autonomous_system import AS
+from cc_calc.country import Country
 from cc_calc.country_path_estimation._as_country_map import (
     ASCountryMap,
     ASCountryMapRepository,
     ASCountryMapRepositoryError,
 )
-from cc_calc.country_path_estimation._country import Country
 
 
 class _CaidaParserState(Enum):

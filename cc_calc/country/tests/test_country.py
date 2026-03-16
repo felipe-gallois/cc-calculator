@@ -1,6 +1,6 @@
 import pytest
 
-from cc_calc.country_path_estimation import Country, CountryError
+from cc_calc.country._country import Country, CountryError
 
 
 class TestCreateCountry:

@@ -8,7 +8,7 @@ from enum import Enum, auto
 
 import networkx as nx
 
-from cc_calc.as_path_estimation._autonomous_system import AS
+from cc_calc.autonomous_system import AS
 
 
 class ASRelGraphError(Exception):

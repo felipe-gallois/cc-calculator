@@ -1,6 +1,7 @@
 import pytest
 
-from cc_calc.as_path_estimation import AS, ASRel, ASRelGraph, ASRelGraphError, RelType
+from cc_calc.as_path_estimation import ASRel, ASRelGraph, ASRelGraphError, RelType
+from cc_calc.autonomous_system import AS
 
 
 class TestListPathReceivers:

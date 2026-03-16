@@ -1,7 +1,8 @@
 from io import StringIO
 
-from cc_calc.as_path_estimation import AS, ASPath
+from cc_calc.as_path_estimation._as_path import ASPath
 from cc_calc.as_path_estimation._caida_rib_dump_repository import _collect_prefix_paths
+from cc_calc.autonomous_system import AS
 from cc_calc.ip_prefix import IPPrefix
 
 

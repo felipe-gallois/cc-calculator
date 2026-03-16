@@ -7,7 +7,6 @@ from cc_calc.as_path_estimation._as_rel_graph import (
     ASRelGraphRepositoryError,
     RelType,
 )
-from cc_calc.as_path_estimation._autonomous_system import AS, ASError
 from cc_calc.as_path_estimation._caida_as_rel_repository import CaidaASRelRepository
 from cc_calc.as_path_estimation._caida_rib_dump_repository import CaidaRIBDumpRepository
 from cc_calc.as_path_estimation._loc_rib_model import (
@@ -24,8 +23,6 @@ from cc_calc.as_path_estimation._prefix_sure_as_path_list import (
 )
 
 __all__ = [
-    "AS",
-    "ASError",
     "ASPath",
     "ASPathError",
     "ASRel",

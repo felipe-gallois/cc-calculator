@@ -3,7 +3,7 @@
 import math
 from collections import Counter
 
-from cc_calc.country_path_estimation import Country
+from cc_calc.country import Country
 
 
 def _norm_country(country: str | Country) -> Country:

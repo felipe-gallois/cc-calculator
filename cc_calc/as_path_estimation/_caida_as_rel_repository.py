@@ -11,7 +11,7 @@ from cc_calc.as_path_estimation._as_rel_graph import (
     ASRelGraphRepositoryError,
     RelType,
 )
-from cc_calc.as_path_estimation._autonomous_system import AS
+from cc_calc.autonomous_system import AS
 
 
 def _tokenize(line: str) -> list[str]:

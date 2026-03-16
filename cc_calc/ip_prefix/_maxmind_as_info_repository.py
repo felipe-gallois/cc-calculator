@@ -4,8 +4,8 @@ from os import PathLike
 
 from geoip2.database import Reader
 
-from cc_calc.as_path_estimation import AS
-from cc_calc.country_path_estimation import Country
+from cc_calc.autonomous_system import AS
+from cc_calc.country import Country
 from cc_calc.ip_prefix._ip_prefix import IPPrefix
 from cc_calc.ip_prefix._prefix_info import PrefixInfo, PrefixInfoRepository
 

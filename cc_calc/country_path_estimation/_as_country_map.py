@@ -2,8 +2,8 @@
 
 from abc import ABC, abstractmethod
 
-from cc_calc.as_path_estimation import AS
-from cc_calc.country_path_estimation._country import Country
+from cc_calc.autonomous_system import AS
+from cc_calc.country import Country
 
 
 class ASCountryMapRepositoryError(Exception):

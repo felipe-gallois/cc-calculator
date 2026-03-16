@@ -2,13 +2,13 @@ import pytest
 from pytest_mock import MockerFixture
 
 from cc_calc.as_path_estimation import (
-    AS,
     ASPath,
     ASRelGraph,
     LocRIBModelError,
     PrefixSureASPathList,
     predict_loc_rib_model,
 )
+from cc_calc.autonomous_system import AS
 from cc_calc.ip_prefix import IPPrefix
 
 
@@ -56,8 +56,8 @@ class TestPredictLocRIBModel:
         peer_as = AS(65536)
 
         as_rel_stub = mocker.create_autospec(ASRelGraph)
-        as_rel_stub.bgp_receivers_from_as.side_effect = (
-            lambda curr_as, prev_as: {peer_as} if curr_as == AS(65537) else set()
+        as_rel_stub.bgp_receivers_from_as.side_effect = lambda curr_as, prev_as: (
+            {peer_as} if curr_as == AS(65537) else set()
         )
 
         model = predict_loc_rib_model(as_rel_stub, dummy_path_list_one)
@@ -112,8 +112,8 @@ class TestPredictLocRIBModel:
         peer_as = AS(65540)
 
         as_rel_stub = mocker.create_autospec(ASRelGraph)
-        as_rel_stub.bgp_receivers_from_as.side_effect = (
-            lambda curr_as, prev_as: {peer_as} if curr_as == AS(65537) else set()
+        as_rel_stub.bgp_receivers_from_as.side_effect = lambda curr_as, prev_as: (
+            {peer_as} if curr_as == AS(65537) else set()
         )
 
         model = predict_loc_rib_model(as_rel_stub, dummy_path_list_two)

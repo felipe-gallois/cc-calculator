@@ -1,4 +1,5 @@
-from cc_calc.country_path_estimation import Country, CountryPath, UnknownCountryEvent
+from cc_calc.country import Country
+from cc_calc.country_path_estimation import CountryPath, UnknownCountryEvent
 
 
 class TestCreateCountryPath:

@@ -1,78 +1,84 @@
 import pytest
 
-from cc_calc.as_path_estimation import ASRel, ASRelGraph, ASRelGraphError, RelType
+from cc_calc.as_path_estimation._as_path import ASPath
+from cc_calc.as_path_estimation._as_rel_graph import (
+    ASRel,
+    ASRelGraph,
+    ASRelGraphError,
+    RelType,
+)
 from cc_calc.autonomous_system import AS
 
 
-class TestListPathReceivers:
-    def test_if_as_not_in_graph_raise_error(self) -> None:
+class TestGetASPath:
+    def test_when_src_and_dst_ases_are_the_same_path_contains_only_as(self) -> None:
         graph = ASRelGraph()
+        graph.add_rel(ASRel(AS(65536), AS(65537), RelType.P2C))
+
+        assert graph.get_as_path(AS(65536), AS(65536)) == ASPath([AS(65536)])
+
+    def test_when_src_and_dst_are_one_hop_appart_returns_path_with_both_ases(
+        self,
+    ) -> None:
+        graph = ASRelGraph()
+        graph.add_rel(ASRel(AS(65536), AS(65537), RelType.P2C))
+
+        assert graph.get_as_path(AS(65536), AS(65537)) == ASPath([AS(65536), AS(65537)])
+
+    def test_when_src_and_dst_are_two_hops_appart_returns_path_with_three_ases(
+        self,
+    ) -> None:
+        graph = ASRelGraph()
+        graph.add_rel(ASRel(AS(65536), AS(65537), RelType.P2C))
+        graph.add_rel(ASRel(AS(65537), AS(65538), RelType.P2C))
+
+        assert graph.get_as_path(AS(65536), AS(65538)) == ASPath(
+            [AS(65536), AS(65537), AS(65538)]
+        )
+
+    def test_when_as_not_in_path_it_is_not_included_in_result(self) -> None:
+        graph = ASRelGraph()
+        graph.add_rel(ASRel(AS(65536), AS(65537), RelType.P2C))
+        graph.add_rel(ASRel(AS(65537), AS(65538), RelType.P2C))
+        graph.add_rel(ASRel(AS(65537), AS(65539), RelType.P2C))
+
+        assert graph.get_as_path(AS(65536), AS(65538)) == ASPath(
+            [AS(65536), AS(65537), AS(65538)]
+        )
+
+    def test_when_src_or_dst_is_not_in_graph_raises_exception(self) -> None:
+        graph = ASRelGraph()
+        graph.add_rel(ASRel(AS(65537), AS(65538), RelType.P2C))
 
         with pytest.raises(ASRelGraphError):
-            graph.bgp_receivers_from_as("1")
+            graph.get_as_path(AS(65536), AS(65537))
 
-    @pytest.mark.parametrize(
-        "topology, receivers",
-        [
-            ({ASRel(AS(1), AS(2), RelType.P2P)}, {AS(2)}),
-            (
-                {
-                    ASRel(AS(1), AS(2), RelType.P2P),
-                    ASRel(AS(1), AS(3), RelType.P2P),
-                },
-                {AS(2), AS(3)},
-            ),
-        ],
-    )
-    def test_when_originates_new_path_propagate_to_all(
-        self, topology: set[ASRel], receivers: set[AS]
-    ) -> None:
+        with pytest.raises(ASRelGraphError):
+            graph.get_as_path(AS(65538), AS(65539))
+
+    def test_when_path_does_not_exist_returns_none(self) -> None:
         graph = ASRelGraph()
+        graph.add_rel(ASRel(AS(65536), AS(65537), RelType.P2C))
+        graph.add_rel(ASRel(AS(65538), AS(65539), RelType.P2C))
 
-        for rel in topology:
-            graph.add_rel(rel)
+        assert graph.get_as_path(AS(65536), AS(65539)) is None
 
-        assert graph.bgp_receivers_from_as("1") == receivers
-
-    @pytest.mark.parametrize(
-        "topology, receivers",
-        [
-            (
-                {
-                    ASRel(AS(1), AS(2), RelType.P2P),
-                    ASRel(AS(2), AS(3), RelType.P2P),
-                },
-                set(),
-            ),
-            (
-                {
-                    ASRel(AS(1), AS(2), RelType.P2P),
-                    ASRel(AS(2), AS(3), RelType.P2C),
-                },
-                {AS(3)},
-            ),
-            (
-                {
-                    ASRel(AS(1), AS(2), RelType.P2P),
-                    ASRel(AS(3), AS(2), RelType.P2C),
-                },
-                set(),
-            ),
-            (
-                {
-                    ASRel(AS(2), AS(1), RelType.P2C),
-                    ASRel(AS(2), AS(3), RelType.P2P),
-                },
-                {AS(3)},
-            ),
-        ],
-    )
-    def test_when_receives_prefix_from_third_party_propagate_according_to_valley_free(
-        self, topology: set[ASRel], receivers: set[AS]
-    ) -> None:
+    def test_when_path_has_peer_relationship_returns_path(self) -> None:
         graph = ASRelGraph()
+        graph.add_rel(ASRel(AS(65537), AS(65536), RelType.P2P))
 
-        for rel in topology:
-            graph.add_rel(rel)
+        assert graph.get_as_path(AS(65536), AS(65537)) == ASPath([AS(65536), AS(65537)])
 
-        assert graph.bgp_receivers_from_as("2", prev_as="1") == receivers
+    def test_when_only_path_goes_down_then_up_returns_none(self) -> None:
+        graph = ASRelGraph()
+        graph.add_rel(ASRel(AS(65536), AS(65537), RelType.P2C))
+        graph.add_rel(ASRel(AS(65538), AS(65537), RelType.P2C))
+
+        assert graph.get_as_path(AS(65536), AS(65538)) is None
+
+    def test_when_only_path_goes_sideways_twice_returns_none(self) -> None:
+        graph = ASRelGraph()
+        graph.add_rel(ASRel(AS(65538), AS(65537), RelType.P2P))
+        graph.add_rel(ASRel(AS(65537), AS(65536), RelType.P2P))
+
+        assert graph.get_as_path(AS(65536), AS(65538)) is None

@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections import deque
 from dataclasses import dataclass
 from enum import Enum, auto
 
 import networkx as nx
 
+from cc_calc.as_path_estimation._as_path import ASPath
 from cc_calc.autonomous_system import AS
 
 
@@ -85,46 +87,63 @@ class ASRelGraph:
         """
         self._digraph.add_edge(rel.src_as, rel.dst_as, type=rel.type)
 
-    def bgp_receivers_from_as(
-        self, curr_as: int | str | AS, prev_as: int | str | AS | None = None
-    ) -> set[AS]:
-        """Collects ASes that receive BGP path announcements from an AS.
+    def get_as_path(self, src_as: AS, dst_as: AS) -> ASPath | None:
+        """Calculates the shortest AS path between two ASes.
 
-        The ASes are collected according to the valley-free rule.
+        This method calculates the shortest AS path between two ASes that follows the
+        valley-free principle. This principle describes what data paths between ASes
+        can be expected in normal circunstances, given real-world economic
+        relationships between Internet service providers.
 
         Args:
-            curr_as: The AS whose neighbors are being collected.
-            prev_as: The AS that announced the path to curr_as (necessary to calculate
-                     the valley-free rule).
+            src_as: The source AS.
+            dst_as: The destination AS.
 
-        Returns: A set of autonomous systems.
+        Returns: The calculated AS path, or None, if there are no possible paths.
 
         Raises:
-            ASRelGraphError: If curr_as is not in the graph.
+            ASRelGraphError: If the source or the destination ASes are not in the graph.
         """
-        if not isinstance(curr_as, AS):
-            curr_as = AS(curr_as)
+        if src_as not in self.nodes:
+            raise ASRelGraphError(
+                f"Cannot calculate path from {src_as} because it is not in the graph"
+            )
 
-        succ = self._neighbors(curr_as)
+        if dst_as not in self.nodes:
+            raise ASRelGraphError(
+                f"Cannot calculate path to {dst_as} because it is not in the graph"
+            )
 
-        if not prev_as:
-            return succ
+        paths: deque[tuple[ASPath, bool]] = deque()
+        paths.append((ASPath([dst_as]), True))
 
-        if not isinstance(prev_as, AS):
-            prev_as = AS(prev_as)
+        while len(paths) > 0:
+            path, went_up = paths.pop()
+            first_element = path[0]
 
-        succ.discard(prev_as)
+            if first_element == src_as:
+                return path
 
-        if self._is_customer(prev_as, curr_as):
-            return succ
+            pred_set = set(self._digraph.predecessors(first_element))
+            succ_set = set(self._digraph.successors(first_element))
+            neigh_set = pred_set | succ_set
 
-        return {s for s in succ if self._is_provider(curr_as, s)}
+            for neigh in neigh_set:
+                if neigh in path:
+                    continue
 
-    def _neighbors(self, as_: AS) -> set[AS]:
-        try:
-            return set(self._digraph.neighbors(as_))
-        except nx.NetworkXError as e:
-            raise ASRelGraphError(f"{as_} is not in the graph") from e
+                if (not went_up) and (not self._is_provider(first_element, neigh)):
+                    continue
+
+                appended_path = (
+                    (path.append(neigh), True)
+                    if self._is_customer(first_element, neigh)
+                    else (path.append(neigh), False)
+                )
+
+                paths.append(appended_path)
+
+        return None
 
     def _is_provider(self, src_as: AS, dst_as: AS) -> bool:
         provider = False

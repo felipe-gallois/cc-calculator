@@ -50,21 +50,18 @@ class ASPath:
             yield _as
 
     @overload
-    def __getitem__(self, key: int) -> AS | None:
+    def __getitem__(self, key: int) -> AS:
         pass
 
     @overload
     def __getitem__(self, key: slice) -> "ASPath":
         pass
 
-    def __getitem__(self, key: int | slice) -> AS | "ASPath" | None:
+    def __getitem__(self, key: int | slice) -> AS | "ASPath":
         if isinstance(key, slice):
             return ASPath(self._path[key])
 
-        try:
-            return self._path[key]
-        except IndexError:
-            return None
+        return self._path[key]
 
     def peek(self) -> AS | None:
         """Gets the first AS of the AS path.

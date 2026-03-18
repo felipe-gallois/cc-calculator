@@ -4,7 +4,6 @@ from cc_calc.as_path_estimation import (
     ASPath,
     LocRIBModel,
     LocRIBModelError,
-    SecondSurePathEvent,
 )
 from cc_calc.autonomous_system import AS
 from cc_calc.ip_prefix import IPPrefix
@@ -35,13 +34,13 @@ class TestAddLocRIBPath:
         with pytest.raises(LocRIBModelError):
             model.best_path(AS(65536))
 
-    def test_after_unsure_path_update_rib_updates_path(
+    def test_after_single_path_update_rib_updates_path(
         self, model: LocRIBModel, dummy_path: ASPath
     ) -> None:
         model.add_path(AS(65536), dummy_path)
         assert model.best_path(AS(65536)) == dummy_path
 
-    def test_after_unsure_path_update_other_as_loc_rib_does_not_update(
+    def test_after_path_update_other_as_loc_rib_does_not_update(
         self, model: LocRIBModel, dummy_path: ASPath
     ) -> None:
         model.add_path(AS(65536), dummy_path)
@@ -49,7 +48,7 @@ class TestAddLocRIBPath:
         with pytest.raises(LocRIBModelError):
             model.best_path(AS(65537))
 
-    def test_after_two_unsure_path_updates_best_path_is_the_shortest(
+    def test_after_two_path_updates_best_path_is_the_shortest(
         self,
         model: LocRIBModel,
         dummy_path: ASPath,
@@ -59,44 +58,20 @@ class TestAddLocRIBPath:
         model.add_path(AS(65536), dummy_path_two)
         assert model.best_path(AS(65536)) == dummy_path
 
-    def test_after_sure_and_unsure_path_updates_best_path_is_the_sure_one(
-        self,
-        model: LocRIBModel,
-        dummy_path: ASPath,
-        dummy_path_two: ASPath,
-    ) -> None:
-        model.add_path(AS(65536), dummy_path_two, sureness=True)
-        model.add_path(AS(65536), dummy_path)
-        assert model.best_path(AS(65536)) == dummy_path_two
-
-    def test_after_unsure_path_update_returns_true(
+    def test_after_single_path_update_returns_true(
         self, model: LocRIBModel, dummy_path: ASPath
     ) -> None:
         assert model.add_path(AS(65536), dummy_path) is True
 
-    def test_after_no_unsure_path_update_returns_false(
+    def test_after_no_path_update_returns_false(
         self, model: LocRIBModel, dummy_path: ASPath, dummy_path_two: ASPath
     ) -> None:
         model.add_path(AS(65536), dummy_path)
         assert model.add_path(AS(65536), dummy_path_two) is False
 
-    def test_after_unsure_path_update_following_no_update_returns_true(
+    def test_after_path_update_following_no_update_returns_true(
         self, model: LocRIBModel, dummy_path: ASPath, dummy_path_two: ASPath
     ) -> None:
         model.add_path(AS(65536), dummy_path_two)
         model.add_path(AS(65536), dummy_path_two)
         assert model.add_path(AS(65536), dummy_path) is True
-
-
-class TestGenerateEvents:
-    def test_after_two_sure_path_additions_generates_event(
-        self, model: LocRIBModel, dummy_path: ASPath
-    ) -> None:
-        model.add_path(AS(65536), dummy_path, sureness=True)
-        model.add_path(AS(65536), dummy_path, sureness=True)
-        assert (
-            SecondSurePathEvent(
-                target=AS(65536), old_path=dummy_path, new_path=dummy_path
-            )
-            in model.events
-        )

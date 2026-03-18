@@ -1,6 +1,6 @@
 """Simplified Loc-RIB model."""
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from copy import copy
 from dataclasses import dataclass
 
@@ -15,20 +15,8 @@ class LocRIBModelError(Exception):
     pass
 
 
-@dataclass(frozen=True)
-class LocRIBModelEvent(ABC):
-    """Generic Loc-RIB model event."""
-
+class LocRIBModelRepositoryError(Exception):
     pass
-
-
-@dataclass(frozen=True)
-class SecondSurePathEvent(LocRIBModelEvent):
-    """Event for when the client wants to overwrite an installed sure path."""
-
-    target: AS
-    old_path: ASPath
-    new_path: ASPath
 
 
 class LocRIBModel:
@@ -38,10 +26,8 @@ class LocRIBModel:
     problem, assuming only one router per AS).
 
     It evaluates paths to IP prefixes announced by Adj-RIB-In tables, keeping only the
-    best one for each AS, according to some simple heuristics, and considering that some
-    Adj-RIB-In entries are sure, while others are infered. The heuristics for selecting
-    the best path are summarized as follows: the shorter paths are chosen over longer
-    ones, but the sure paths are always given preference over unsure ones.
+    best one for each AS, according to a simple heuristic in which the shorter paths are
+    chosen over longer ones.
     """
 
     def __init__(self, prefix: IPPrefix) -> None:
@@ -51,28 +37,14 @@ class LocRIBModel:
             prefix: The destination prefix for the stored AS paths.
         """
         self._prefix = IPPrefix
-
-        self._events: list[LocRIBModelEvent] = []
-
         self._loc_ribs: dict[AS, ASPath] = dict()
-        self._sure_paths: dict[AS, bool] = dict()
 
-    @property
-    def events(self) -> list[LocRIBModelEvent]:
-        """The list of events produced by the object."""
-        return copy(self._events)
-
-    def clear_events(self) -> None:
-        """Clears the object's events."""
-        self._events.clear()
-
-    def add_path(self, src_as: AS, path: ASPath, sureness: bool = False) -> bool:
+    def add_path(self, src_as: AS, path: ASPath) -> bool:
         """Adds a path to the Loc-RIB model.
 
         Args:
             src_as: The AS that receives the Adj-RIB-In path.
             path: The AS path to the prefix.
-            sureness: A boolean indicating whether the path is sure or not.
 
         Returns: A boolean, telling if the operation caused a best path update.
         """
@@ -80,16 +52,12 @@ class LocRIBModel:
 
         try:
             rib_path = self._loc_ribs[src_as]
-            rib_sure = self._sure_paths[src_as]
 
-            if rib_sure and sureness is True:
-                self._generate_second_sure_path_event(src_as, rib_path, path)
-
-            if (not rib_sure) and (len(rib_path) > len(path)):
-                self._update_loc_rib(src_as, path, False)
+            if len(rib_path) > len(path):
+                self._loc_ribs[src_as] = path
                 updated = True
         except KeyError:
-            self._update_loc_rib(src_as, path, sureness)
+            self._loc_ribs[src_as] = path
             updated = True
 
         return updated
@@ -110,12 +78,8 @@ class LocRIBModel:
         except KeyError as e:
             raise LocRIBModelError(f"There is no Loc-RIB for {src_as}") from e
 
-    def _update_loc_rib(self, src_as: AS, path: ASPath, sureness: bool) -> None:
-        self._loc_ribs[src_as] = path
-        self._sure_paths[src_as] = sureness
 
-    def _generate_second_sure_path_event(
-        self, target: AS, old_path: ASPath, new_path: ASPath
-    ) -> None:
-        event = SecondSurePathEvent(target, old_path, new_path)
-        self._events.append(event)
+class LocRIBModelRepository(ABC):
+    @abstractmethod
+    def save_model(self, model: LocRIBModel) -> None:
+        pass

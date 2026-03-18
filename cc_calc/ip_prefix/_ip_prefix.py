@@ -1,11 +1,17 @@
 """IP prefix."""
 
+from abc import ABC, abstractmethod
+
 from ipaddress import IPv4Network, IPv6Network
 
 
 class IPPrefixError(Exception):
     """Any error raised by IPPrefix."""
 
+    pass
+
+
+class IPPrefixRepositoryError(Exception):
     pass
 
 
@@ -50,3 +56,9 @@ class IPPrefix:
     def address_part(self) -> str:
         """The address part of the IP prefix."""
         return str(self._prefix.network_address)
+
+
+class IPPrefixRepository(ABC):
+    @abstractmethod
+    def load_prefixes(self) -> set[IPPrefix]:
+        pass

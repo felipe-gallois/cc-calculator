@@ -12,8 +12,6 @@ from cc_calc.as_path_estimation._caida_rib_dump_repository import CaidaRIBDumpRe
 from cc_calc.as_path_estimation._loc_rib_model import (
     LocRIBModel,
     LocRIBModelError,
-    LocRIBModelEvent,
-    SecondSurePathEvent,
 )
 from cc_calc.as_path_estimation._loc_rib_prediction import predict_loc_rib_model
 from cc_calc.as_path_estimation._prefix_sure_as_path_list import (

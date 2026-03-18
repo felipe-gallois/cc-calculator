@@ -45,14 +45,12 @@ class PrefixSureASPathListRepository(ABC):
     """Prefix sure AS path list repository."""
 
     @abstractmethod
-    def load_prefix_paths(
-        self, prefixes: Iterable[IPPrefix]
-    ) -> set[PrefixSureASPathList]:
-        """Loads sure AS path lists for the input prefixes.
+    def load_all_sure_path_lists(self) -> set[PrefixSureASPathList]:
+        """Loads every sure AS path list.
 
-        Returns: A set of sure AS path lists (one for each input prefix).
+        Returns: A collection of every sure AS path list.
 
         Raises:
-            RIBLoadingError: If the lists could not be retrieved.
+            RIBLoadingError: If the list cannot be retrieved.
         """
         pass

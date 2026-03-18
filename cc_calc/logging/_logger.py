@@ -1,0 +1,17 @@
+from abc import ABC, abstractmethod
+from enum import IntEnum
+
+
+class LogLevel(IntEnum):
+    DEBUG = 10
+    INFO = 20
+    WARNING = 30
+    ERROR = 40
+    CRITICAL = 50
+
+
+class Logger(ABC):
+    @staticmethod
+    @abstractmethod
+    def log(level: LogLevel, message: str) -> None:
+        pass

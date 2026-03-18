@@ -43,7 +43,7 @@ class TestPredictLocRIBModel:
 
         for i in range(len(dummy_path)):
             src_as = dummy_path[i]
-            expected_path = dummy_path[i + 1 :]
+            expected_path = dummy_path[i:]
 
             if src_as is not None:
                 assert model.best_path(src_as) == expected_path

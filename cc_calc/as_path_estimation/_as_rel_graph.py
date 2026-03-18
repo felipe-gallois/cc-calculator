@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterable
 from dataclasses import dataclass
 from enum import Enum, auto
 
@@ -52,13 +53,16 @@ class ASRel:
 class ASRelGraph:
     """A digraph of autonomous systems and relationship types."""
 
-    def __init__(self) -> None:
+    def __init__(self, rels: Iterable[ASRel] = []) -> None:
         """Initializes the digraph.
 
         Args:
-            digraph: The internal digraph.
+            rels: An iterable collection of relationships.
         """
         self._digraph: nx.DiGraph[AS] = nx.DiGraph()
+
+        for rel in rels:
+            self.add_rel(rel)
 
     @property
     def nodes(self) -> set[AS]:

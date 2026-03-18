@@ -14,7 +14,7 @@ def _add_sure_path_recursively(path: ASPath, model: LocRIBModel) -> None:
         last_as = path[i]
 
         if last_as is not None:
-            model.add_path(last_as, path[i + 1 :], sureness=True)
+            model.add_path(last_as, path[i:])
 
 
 def _insert_sure_paths(sure_paths: PrefixSureASPathList, model: LocRIBModel) -> None:
@@ -40,24 +40,28 @@ def predict_loc_rib_model(
     """
     model = LocRIBModel(sure_paths.prefix)
 
+    base_as_set = _collect_base_as_set(sure_paths)
+
     update_queue: deque[AS] = deque()
 
     _insert_sure_paths(sure_paths, model)
 
-    for _as in _collect_base_as_set(sure_paths):
+    for _as in base_as_set:
         update_queue.append(_as)
 
     while len(update_queue) != 0:
         updated_as = update_queue.popleft()
         as_path = model.best_path(updated_as)
 
-        appended_path = as_path.append(updated_as)
-
-        prev_as = as_path[0]
+        prev_as = as_path[1]
 
         peers = as_rel_graph.bgp_receivers_from_as(updated_as, prev_as)
 
         for peer in peers:
+            if peer in base_as_set:
+                continue
+
+            appended_path = as_path.append(peer)
             updated = model.add_path(peer, appended_path)
 
             if updated:

@@ -6,7 +6,7 @@ from os import PathLike
 from typing import TextIO
 
 from cc_calc.autonomous_system import AS
-from cc_calc.country import Country
+from cc_calc.country import Alpha2Code
 from cc_calc.country_path_estimation._as_country_map import (
     ASCountryMap,
     ASCountryMapRepository,
@@ -98,7 +98,10 @@ class CaidaASOrganizationRepository(ASCountryMapRepository):
                 asn_country_map = _text_to_asn_country_map(text)
 
             return ASCountryMap(
-                {AS(asn): Country(country) for asn, country in asn_country_map.items()}
+                {
+                    AS(asn): Alpha2Code(country)
+                    for asn, country in asn_country_map.items()
+                }
             )
         except Exception as e:
             raise ASCountryMapRepositoryError(

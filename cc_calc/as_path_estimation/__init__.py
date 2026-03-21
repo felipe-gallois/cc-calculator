@@ -9,7 +9,6 @@ from cc_calc.as_path_estimation._as_rel_graph import (
 )
 from cc_calc.as_path_estimation._caida_as_rel_repository import CaidaASRelRepository
 
-
 __all__ = [
     "ASPath",
     "ASPathError",

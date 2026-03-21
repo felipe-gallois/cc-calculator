@@ -1,43 +1,29 @@
-import pytest
-
-from cc_calc.country._country import Country, CountryError
-
-
-class TestCreateCountry:
-    def test_country_code_with_less_than_one_character_raises_exception(self) -> None:
-        with pytest.raises(CountryError):
-            Country("U")
-
-    def test_country_code_with_more_than_one_character_raises_exception(self) -> None:
-        with pytest.raises(CountryError):
-            Country("USA")
-
-    def test_country_with_non_alpha_characters_raises_exception(self) -> None:
-        with pytest.raises(CountryError):
-            Country("U5")
+from cc_calc.autonomous_system import ASN
+from cc_calc.country._country import Country
+from cc_calc.country._country_code import Alpha2Code
 
 
-class TestCompareCountry:
-    def test_equality_with_another_type_returns_false(self) -> None:
-        country_a = "US"
-        country_b = Country("US")
+class TestGetCountryCode:
+    def test_when_object_created_can_get_code(self) -> None:
+        country = Country(Alpha2Code("BR"))
+        assert country.code == Alpha2Code("BR")
 
-        assert country_a != country_b
+        country = Country(Alpha2Code("US"))
+        assert country.code == Alpha2Code("US")
 
-    def test_countries_with_same_code_are_equal(self) -> None:
-        country_a = Country("US")
-        country_b = Country("US")
 
-        assert country_a == country_b
+class TestListSpannedASes:
+    def test_when_no_as_is_added_list_of_spanned_ases_is_empty(self) -> None:
+        country = Country(Alpha2Code("BR"))
+        assert country.spanned_ases == set()
 
-    def test_countries_with_different_codes_are_not_equal(self) -> None:
-        country_a = Country("US")
-        country_b = Country("CA")
+    def test_when_one_as_is_added_list_of_spanned_ases_has_just_the_as(self) -> None:
+        country = Country(Alpha2Code("BR"))
+        country.add_as(ASN(65536))
+        assert country.spanned_ases == {ASN(65536)}
 
-        assert country_a != country_b
-
-    def test_countries_with_different_cases_are_equal(self) -> None:
-        country_a = Country("us")
-        country_b = Country("US")
-
-        assert country_a == country_b
+    def test_when_spanned_as_set_is_modified_country_state_is_not_changed(self) -> None:
+        country = Country(Alpha2Code("BR"))
+        spanned_ases = country.spanned_ases
+        spanned_ases.add(ASN(65536))
+        assert country.spanned_ases == set()

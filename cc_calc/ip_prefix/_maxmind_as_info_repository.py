@@ -5,7 +5,7 @@ from os import PathLike
 from geoip2.database import Reader
 
 from cc_calc.autonomous_system import AS
-from cc_calc.country import Country
+from cc_calc.country import Alpha2Code, Country
 from cc_calc.ip_prefix._ip_prefix import IPPrefix
 from cc_calc.ip_prefix._prefix_info import PrefixInfo, PrefixInfoRepository
 
@@ -51,6 +51,10 @@ class MaxMindInfoRepository(PrefixInfoRepository):
             with Reader(self._countries_file) as reader:
                 maxmind_country = reader.country(prefix.address_part)
                 country_code = maxmind_country.country.iso_code
-                return Country(country_code) if country_code is not None else None
+                return (
+                    Country(Alpha2Code(country_code))
+                    if country_code is not None
+                    else None
+                )
         except Exception:
             return None

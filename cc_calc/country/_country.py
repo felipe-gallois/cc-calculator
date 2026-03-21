@@ -1,40 +1,32 @@
 """Country object and utilities."""
 
+from abc import ABC, abstractmethod
+from copy import copy
 
-class CountryError(Exception):
-    """Any error raised by a Country."""
-
-    pass
+from cc_calc.autonomous_system import ASN
+from cc_calc.country._country_code import CountryCode
 
 
 class Country:
     """A country."""
 
-    def __init__(self, code: str):
-        """Initializes the Country object.
+    def __init__(self, code: CountryCode):
+        self._code = code
+        self._spanned_ases: set[ASN] = set()
 
-        Args:
-            code: The alpha-2 code that represents the country.
+    @property
+    def code(self) -> CountryCode:
+        return self._code
 
-        Raises:
-            CountryError: If code is not in alpha-2 format.
-        """
-        if len(code) != 2 or (not code.isalpha()):
-            raise CountryError(f"{code} is an invalid alpha-2 country code")
+    @property
+    def spanned_ases(self) -> set[ASN]:
+        return copy(self._spanned_ases)
 
-        self._alpha2 = code.upper()
+    def add_as(self, _as: ASN) -> None:
+        self._spanned_ases.add(_as)
 
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, Country):
-            return False
 
-        return self._alpha2 == other._alpha2
-
-    def __hash__(self) -> int:
-        return hash(self._alpha2)
-
-    def __repr__(self) -> str:
-        return f"Country('{self._alpha2}')"
-
-    def __str__(self) -> str:
-        return self._alpha2
+class CountryRepository(ABC):
+    @abstractmethod
+    def load_country(self, country: CountryCode) -> Country:
+        pass

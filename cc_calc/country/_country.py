@@ -7,6 +7,10 @@ from cc_calc.autonomous_system import ASN
 from cc_calc.country._country_code import CountryCode
 
 
+class CountryRepositoryError(Exception):
+    pass
+
+
 class Country:
     """A country."""
 
@@ -28,5 +32,5 @@ class Country:
 
 class CountryRepository(ABC):
     @abstractmethod
-    def load_country(self, country: CountryCode) -> Country:
+    def load_country_with_code(self, code: CountryCode) -> Country:
         pass

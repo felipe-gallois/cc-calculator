@@ -3,7 +3,7 @@
 from collections.abc import Iterator, Sequence
 from typing import overload
 
-from cc_calc.autonomous_system import AS
+from cc_calc.autonomous_system import ASN
 
 
 class ASPathError(Exception):
@@ -15,13 +15,13 @@ class ASPathError(Exception):
 class ASPath:
     """A path of autonomous systems."""
 
-    def __init__(self, path: Sequence[int | str | AS]) -> None:
+    def __init__(self, path: Sequence[int | str | ASN]) -> None:
         """Initializes an ASPath object.
 
         Args:
             path: The sequence of ASes.
         """
-        self._path = tuple(AS(x) if not isinstance(x, AS) else x for x in path)
+        self._path = tuple(ASN(x) if not isinstance(x, ASN) else x for x in path)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ASPath):
@@ -45,25 +45,25 @@ class ASPath:
     def __len__(self) -> int:
         return len(self._path)
 
-    def __iter__(self) -> Iterator[AS]:
+    def __iter__(self) -> Iterator[ASN]:
         for _as in self._path:
             yield _as
 
     @overload
-    def __getitem__(self, key: int) -> AS:
+    def __getitem__(self, key: int) -> ASN:
         pass
 
     @overload
     def __getitem__(self, key: slice) -> "ASPath":
         pass
 
-    def __getitem__(self, key: int | slice) -> AS | "ASPath":
+    def __getitem__(self, key: int | slice) -> ASN | "ASPath":
         if isinstance(key, slice):
             return ASPath(self._path[key])
 
         return self._path[key]
 
-    def peek(self) -> AS | None:
+    def peek(self) -> ASN | None:
         """Gets the first AS of the AS path.
 
         Returns: None, if the AS path is empty; otherwise, the first AS on the path.
@@ -73,7 +73,7 @@ class ASPath:
 
         return self._path[0]
 
-    def append(self, _as: AS) -> "ASPath":
+    def append(self, _as: ASN) -> "ASPath":
         """Appends an AS to the beggining of the AS path.
 
         Args:

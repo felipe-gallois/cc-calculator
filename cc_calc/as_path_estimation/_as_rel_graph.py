@@ -10,7 +10,7 @@ from enum import Enum, auto
 import networkx as nx
 
 from cc_calc.as_path_estimation._as_path import ASPath
-from cc_calc.autonomous_system import AS
+from cc_calc.autonomous_system import ASN
 
 
 class ASRelGraphError(Exception):
@@ -46,8 +46,8 @@ class ASRel:
         type: The relationship type.
     """
 
-    src_as: AS
-    dst_as: AS
+    src_as: ASN
+    dst_as: ASN
     type: RelType
 
 
@@ -60,10 +60,10 @@ class ASRelGraph:
         Args:
             digraph: The internal digraph.
         """
-        self._digraph: nx.DiGraph[AS] = nx.DiGraph()
+        self._digraph: nx.DiGraph[ASN] = nx.DiGraph()
 
     @property
-    def nodes(self) -> set[AS]:
+    def nodes(self) -> set[ASN]:
         """The nodes of the graph."""
         return set(self._digraph.nodes)
 
@@ -87,7 +87,7 @@ class ASRelGraph:
         """
         self._digraph.add_edge(rel.src_as, rel.dst_as, type=rel.type)
 
-    def get_as_path(self, src_as: AS, dst_as: AS) -> ASPath | None:
+    def get_as_path(self, src_as: ASN, dst_as: ASN) -> ASPath | None:
         """Calculates the shortest AS path between two ASes.
 
         This method calculates the shortest AS path between two ASes that follows the
@@ -145,7 +145,7 @@ class ASRelGraph:
 
         return None
 
-    def _is_provider(self, src_as: AS, dst_as: AS) -> bool:
+    def _is_provider(self, src_as: ASN, dst_as: ASN) -> bool:
         provider = False
 
         try:
@@ -158,7 +158,7 @@ class ASRelGraph:
 
         return provider
 
-    def _is_customer(self, src_as: AS, dst_as: AS) -> bool:
+    def _is_customer(self, src_as: ASN, dst_as: ASN) -> bool:
         customer = False
 
         try:

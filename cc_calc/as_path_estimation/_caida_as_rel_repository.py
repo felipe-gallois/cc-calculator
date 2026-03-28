@@ -11,7 +11,7 @@ from cc_calc.as_path_estimation._as_rel_graph import (
     ASRelGraphRepositoryError,
     RelType,
 )
-from cc_calc.autonomous_system import AS
+from cc_calc.autonomous_system import ASN
 
 
 def _tokenize(line: str) -> list[str]:
@@ -33,7 +33,7 @@ def _build_graph(source: TextIO) -> ASRelGraph:
         tokens = _tokenize(line)
 
         if tokens:
-            ases = AS(tokens[0]), AS(tokens[1])
+            ases = ASN(tokens[0]), ASN(tokens[1])
             rel_type = tokens[2]
 
             if _is_p2p(rel_type):

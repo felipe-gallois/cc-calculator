@@ -4,7 +4,7 @@ import pytest
 
 from cc_calc.as_path_estimation import ASRel, RelType
 from cc_calc.as_path_estimation._caida_as_rel_repository import _build_graph
-from cc_calc.autonomous_system import AS
+from cc_calc.autonomous_system import ASN
 
 
 class TestLoadCaidaRels:
@@ -19,15 +19,15 @@ class TestLoadCaidaRels:
         [
             (
                 "12|12345|0|bgp",
-                {AS(12), AS(12345)},
+                {ASN(12), ASN(12345)},
             ),
             (
                 "12|12345|0|bgp\n12|45678|0|bgp\n",
-                {AS(12), AS(12345), AS(45678)},
+                {ASN(12), ASN(12345), ASN(45678)},
             ),
         ],
     )
-    def test_loads_ases_from_announcements(self, input: str, peers: set[AS]) -> None:
+    def test_loads_ases_from_announcements(self, input: str, peers: set[ASN]) -> None:
         src = StringIO(input)
         graph = _build_graph(src)
         assert graph.nodes == peers
@@ -38,12 +38,12 @@ class TestLoadCaidaRels:
             (
                 "12|12345|-1|bgp",
                 {
-                    ASRel(AS(12), AS(12345), RelType.P2C),
+                    ASRel(ASN(12), ASN(12345), RelType.P2C),
                 },
             ),
             (
                 "12|12345|0|bgp",
-                {ASRel(AS(12), AS(12345), RelType.P2P)},
+                {ASRel(ASN(12), ASN(12345), RelType.P2P)},
             ),
         ],
     )

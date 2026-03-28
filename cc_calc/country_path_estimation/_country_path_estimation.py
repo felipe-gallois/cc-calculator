@@ -1,13 +1,13 @@
 """Country path estimation service."""
 
 from cc_calc.as_path_estimation import ASPath
-from cc_calc.autonomous_system import AS
+from cc_calc.autonomous_system import ASN
 from cc_calc.country import CountryCode
 from cc_calc.country_path_estimation._as_country_map import ASCountryMap
 from cc_calc.country_path_estimation._country_path import CountryPath
 
 
-def _estimate_country(_as: AS, map: ASCountryMap) -> CountryCode | None:
+def _estimate_country(_as: ASN, map: ASCountryMap) -> CountryCode | None:
     try:
         return map[_as]
     except KeyError:

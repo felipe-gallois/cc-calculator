@@ -1,7 +1,14 @@
+from abc import ABC, abstractmethod
+
+
 _MAX_ASN = 2**32 - 1
 
 
 class ASNError(Exception):
+    pass
+
+
+class ASNRepositoryError(Exception):
     pass
 
 
@@ -29,3 +36,9 @@ class ASN:
 
     def __hash__(self) -> int:
         return hash(self._number)
+
+
+class ASNRepository(ABC):
+    @abstractmethod
+    def load_all_asns(self) -> set[ASN]:
+        pass

@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 
-from cc_calc.autonomous_system import ASN
+from cc_calc.autonomous_system_number import ASN
 from cc_calc.country import CountryCode
 
 

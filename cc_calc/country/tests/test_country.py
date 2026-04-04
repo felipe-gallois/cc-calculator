@@ -1,4 +1,4 @@
-from cc_calc.autonomous_system import ASN
+from cc_calc.autonomous_system_number import ASN
 from cc_calc.country._country import Country
 from cc_calc.country._country_code import Alpha2Code
 

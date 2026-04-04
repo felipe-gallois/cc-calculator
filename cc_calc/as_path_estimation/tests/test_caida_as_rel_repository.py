@@ -4,7 +4,7 @@ import pytest
 
 from cc_calc.as_path_estimation import ASRel, RelType
 from cc_calc.as_path_estimation._caida_as_rel_repository import _build_graph
-from cc_calc.autonomous_system import ASN
+from cc_calc.autonomous_system_number import ASN
 
 
 class TestLoadCaidaRels:

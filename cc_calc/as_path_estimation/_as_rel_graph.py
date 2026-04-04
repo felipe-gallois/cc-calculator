@@ -10,7 +10,7 @@ from enum import Enum, auto
 import networkx as nx
 
 from cc_calc.as_path_estimation._as_path import ASPath
-from cc_calc.autonomous_system import ASN
+from cc_calc.autonomous_system_number import ASN
 
 
 class ASRelGraphError(Exception):

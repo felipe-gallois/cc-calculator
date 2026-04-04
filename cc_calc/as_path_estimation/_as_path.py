@@ -3,7 +3,7 @@
 from collections.abc import Iterator, Sequence
 from typing import overload
 
-from cc_calc.autonomous_system import ASN
+from cc_calc.autonomous_system_number import ASN
 
 
 class ASPathError(Exception):

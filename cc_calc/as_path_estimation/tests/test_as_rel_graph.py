@@ -7,7 +7,7 @@ from cc_calc.as_path_estimation._as_rel_graph import (
     ASRelGraphError,
     RelType,
 )
-from cc_calc.autonomous_system import ASN
+from cc_calc.autonomous_system_number import ASN
 
 
 class TestGetASPath:

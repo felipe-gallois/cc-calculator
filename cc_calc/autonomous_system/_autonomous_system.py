@@ -1,45 +1,32 @@
 """Autonomous system."""
 
-_MAX_ASN = 2**32 - 1
+from abc import ABC, abstractmethod
+
+from cc_calc.autonomous_system_number import ASN
+from cc_calc.country._country_code import CountryCode
 
 
-class ASError(Exception):
-    """Any error raised by an AS."""
-
+class ASRepositoryError(Exception):
     pass
 
 
 class AS:
     """An autonomous system."""
 
-    def __init__(self, asn: int | str) -> None:
-        """Initializes an AS object.
+    def __init__(self, asn: ASN, country_of_registry: CountryCode) -> None:
+        self._asn = asn
+        self._country_of_registry = country_of_registry
 
-        Args:
-            asn: The autonomous system number.
+    @property
+    def asn(self) -> ASN:
+        return self._asn
 
-        Raises:
-            ASError: If asn is invalid.
-        """
-        try:
-            self._asn = int(asn)
-        except ValueError as e:
-            raise ASError(f"{asn} is not a valid AS number") from e
+    @property
+    def country_of_registry(self) -> CountryCode:
+        return self._country_of_registry
 
-        if not (0 <= self._asn <= _MAX_ASN):
-            raise ASError(f"{self._asn} is not a valid AS number")
 
-    def __eq__(self, other: object) -> bool:
-        if not isinstance(other, AS):
-            return NotImplemented
-
-        return self._asn == other._asn
-
-    def __hash__(self) -> int:
-        return hash(self._asn)
-
-    def __repr__(self) -> str:
-        return f"AS({self._asn})"
-
-    def __str__(self) -> str:
-        return f"AS{self._asn}"
+class ASRepository(ABC):
+    @abstractmethod
+    def load_as(self, asn: ASN) -> AS:
+        pass

@@ -1,9 +1,13 @@
-from cc_calc.autonomous_system._autonomous_system import AS, ASError
-from cc_calc.autonomous_system._autonomous_system_number import ASN, ASNError
+from cc_calc.autonomous_system._autonomous_system import (
+    AS,
+    ASRepository,
+    ASRepositoryError,
+)
+from cc_calc.autonomous_system._file_as_repository import FileASRepository
 
 __all__ = [
     "AS",
-    "ASError",
-    "ASN",
-    "ASNError",
+    "ASRepository",
+    "ASRepositoryError",
+    "FileASRepository",
 ]

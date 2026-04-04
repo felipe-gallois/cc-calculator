@@ -2,7 +2,7 @@ import bz2
 from os import PathLike
 from typing import TextIO
 
-from cc_calc.autonomous_system._autonomous_system_number import (
+from cc_calc.autonomous_system_number._autonomous_system_number import (
     ASN,
     ASNRepository,
     ASNRepositoryError,

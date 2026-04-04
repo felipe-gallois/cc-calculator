@@ -5,7 +5,7 @@ from enum import Enum, auto
 from os import PathLike
 from typing import TextIO
 
-from cc_calc.autonomous_system import ASN
+from cc_calc.autonomous_system_number import ASN
 from cc_calc.country import Alpha2Code
 from cc_calc.country_path_estimation._as_country_map import (
     ASCountryMap,

@@ -1,4 +1,4 @@
-from cc_calc.autonomous_system._autonomous_system_number import ASN
+from cc_calc.autonomous_system_number import ASN
 from cc_calc.country._asn_resolver import ASNResolver, ASNResolverError
 from cc_calc.country._country import Country, CountryRepository, CountryRepositoryError
 from cc_calc.country._country_code import CountryCode

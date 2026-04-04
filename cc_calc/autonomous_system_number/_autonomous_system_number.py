@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-
 _MAX_ASN = 2**32 - 1
 
 

@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from itertools import chain
 from typing import overload
 
-from cc_calc.country import CountryCode
+from cc_calc.country_code import CountryCode
 
 
 @dataclass

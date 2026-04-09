@@ -9,7 +9,7 @@ from cc_calc.autonomous_system._autonomous_system import (
     ASRepositoryError,
 )
 from cc_calc.autonomous_system_number import ASN
-from cc_calc.country import Alpha2Code
+from cc_calc.country_code import Alpha2Code
 
 
 class FileASRepository(ASRepository):

@@ -1,6 +1,6 @@
 import pytest
 
-from cc_calc.country._country_code import Alpha2Code, CountryCodeError
+from cc_calc.country_code import Alpha2Code, CountryCodeError
 
 
 class TestCreateAlpha2Code:

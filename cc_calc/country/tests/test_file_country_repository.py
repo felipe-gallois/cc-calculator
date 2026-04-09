@@ -6,8 +6,8 @@ from pytest_mock import MockerFixture
 from cc_calc.autonomous_system_number import ASN
 from cc_calc.country._asn_resolver import ASNResolver, ASNResolverError
 from cc_calc.country._country import CountryRepositoryError
-from cc_calc.country._country_code import Alpha2Code
 from cc_calc.country._file_country_repository import FileCountryRepository
+from cc_calc.country_code import Alpha2Code
 
 
 @pytest.fixture

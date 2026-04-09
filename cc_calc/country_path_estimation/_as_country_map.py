@@ -3,7 +3,7 @@
 from abc import ABC, abstractmethod
 
 from cc_calc.autonomous_system_number import ASN
-from cc_calc.country import CountryCode
+from cc_calc.country_code import CountryCode
 
 
 class ASCountryMapRepositoryError(Exception):

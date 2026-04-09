@@ -3,7 +3,7 @@
 import math
 from collections import Counter
 
-from cc_calc.country import CountryCode
+from cc_calc.country_code import CountryCode
 
 
 class CentralityTable:

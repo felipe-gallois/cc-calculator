@@ -1,7 +1,7 @@
 import math
 
 from cc_calc.centrality_metric import update_centrality
-from cc_calc.country import Alpha2Code
+from cc_calc.country_code import Alpha2Code
 from cc_calc.country_path_estimation import CountryPath
 
 

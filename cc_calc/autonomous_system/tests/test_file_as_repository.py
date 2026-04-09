@@ -8,7 +8,7 @@ import pytest
 from cc_calc.autonomous_system._autonomous_system import ASRepositoryError
 from cc_calc.autonomous_system._file_as_repository import FileASRepository
 from cc_calc.autonomous_system_number import ASN
-from cc_calc.country import Alpha2Code
+from cc_calc.country_code import Alpha2Code
 
 
 @pytest.fixture

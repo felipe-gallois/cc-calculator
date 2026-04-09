@@ -1,6 +1,6 @@
 from cc_calc.as_path_estimation import ASPath
 from cc_calc.autonomous_system_number import ASN
-from cc_calc.country import Alpha2Code
+from cc_calc.country_code import Alpha2Code
 from cc_calc.country_path_estimation import (
     ASCountryMap,
     CountryPath,

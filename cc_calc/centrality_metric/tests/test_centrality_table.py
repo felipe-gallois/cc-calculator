@@ -3,7 +3,7 @@ import math
 import pytest
 
 from cc_calc.centrality_metric._centrality_table import CentralityTable
-from cc_calc.country import Alpha2Code
+from cc_calc.country_code import Alpha2Code
 
 
 @pytest.fixture

@@ -1,13 +1,13 @@
 from pytest_mock import MockerFixture
 
-from cc_calc.country._ip_prefix_source import RouteViewsIPPrefixSource
+from cc_calc.ip_block._ip_prefix_source import RouteViewsIPPrefixSource
 
 
 def test_when_file_has_one_prefix_loads_prefix(mocker: MockerFixture) -> None:
     mock_open = mocker.mock_open(read_data="192.0.2.0\t24\t65536\n")
 
     mocker.patch(
-        "cc_calc.country._ip_prefix_source.gzip.open",
+        "cc_calc.ip_block._ip_prefix_source.gzip.open",
         return_value=mock_open.return_value,
     )
 
@@ -23,7 +23,7 @@ def test_when_file_has_two_prefixes_loads_both_prefixes(mocker: MockerFixture) -
     )
 
     mocker.patch(
-        "cc_calc.country._ip_prefix_source.gzip.open",
+        "cc_calc.ip_block._ip_prefix_source.gzip.open",
         return_value=mock_open.return_value,
     )
 

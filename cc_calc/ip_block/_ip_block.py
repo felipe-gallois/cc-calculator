@@ -33,7 +33,7 @@ class IPBlock:
         return self._country
 
     @country.setter
-    def country(self, code: CountryCode) -> None:
+    def country(self, code: CountryCode | None) -> None:
         self._country = code
 
     @property
@@ -41,7 +41,7 @@ class IPBlock:
         return self._as
 
     @autonomous_system.setter
-    def autonomous_system(self, asn: ASN) -> None:
+    def autonomous_system(self, asn: ASN | None) -> None:
         self._as = asn
 
 

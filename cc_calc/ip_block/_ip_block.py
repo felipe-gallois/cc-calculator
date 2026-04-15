@@ -45,7 +45,13 @@ class IPBlock:
         self._as = asn
 
 
+class IPBlockSpecification(ABC):
+    @abstractmethod
+    def is_met_in(self, ip_block: IPBlock) -> bool:
+        pass
+
+
 class IPBlockRepository(ABC):
     @abstractmethod
-    def load_blocks_in_country(self, country: CountryCode) -> set[IPBlock]:
+    def load_blocks_with_specs(self, specs: set[IPBlockSpecification]) -> set[IPBlock]:
         pass

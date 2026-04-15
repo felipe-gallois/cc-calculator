@@ -1,9 +1,10 @@
 from cc_calc.autonomous_system_number import ASN
-from cc_calc.country_code import Alpha2Code, CountryCode
+from cc_calc.country_code import Alpha2Code
 from cc_calc.ip_block._ip_block import (
     IPBlock,
     IPBlockRepository,
     IPBlockRepositoryError,
+    IPBlockSpecification,
 )
 from cc_calc.ip_block._ip_prefix_source import IPPrefixSource, IPPrefixSourceError
 from cc_calc.ip_block._prefix_asn_resolver import (
@@ -28,19 +29,18 @@ class FileIPBlockRepository(IPBlockRepository):
         self._asn_resolver = asn_resolver
         self._country_resolver = country_resolver
 
-    def load_blocks_in_country(self, country: CountryCode) -> set[IPBlock]:
+    def load_blocks_with_specs(self, specs: set[IPBlockSpecification]) -> set[IPBlock]:
         try:
             prefixes = self._prefix_source.load_all_ip_prefixes()
 
             country_blocks = set()
 
             for prefix in prefixes:
-                c = self._country_resolver.load_prefix_country(prefix)
+                country = self._country_resolver.load_prefix_country(prefix)
+                asn = self._asn_resolver.load_prefix_asn(prefix)
+                block = FileIPBlockRepository._make_block(prefix, asn, country)
 
-                if c == str(country):
-                    asn = self._asn_resolver.load_prefix_asn(prefix)
-
-                    block = FileIPBlockRepository._make_block(prefix, asn, c)
+                if all(spec.is_met_in(block) for spec in specs):
                     country_blocks.add(block)
 
             return country_blocks

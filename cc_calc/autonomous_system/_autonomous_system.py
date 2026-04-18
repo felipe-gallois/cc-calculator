@@ -13,7 +13,9 @@ class ASRepositoryError(Exception):
 class AS:
     """An autonomous system."""
 
-    def __init__(self, asn: ASN, country_of_registry: CountryCode) -> None:
+    def __init__(
+        self, asn: ASN, country_of_registry: CountryCode | None = None
+    ) -> None:
         self._asn = asn
         self._country_of_registry = country_of_registry
 
@@ -22,8 +24,12 @@ class AS:
         return self._asn
 
     @property
-    def country_of_registry(self) -> CountryCode:
+    def country_of_registry(self) -> CountryCode | None:
         return self._country_of_registry
+
+    @country_of_registry.setter
+    def country_of_registry(self, country: CountryCode) -> None:
+        self._country_of_registry = country
 
 
 class ASRepository(ABC):

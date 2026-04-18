@@ -11,7 +11,10 @@ from cc_calc.country_path_estimation._country_path import (
     CountryPathEvent,
     UnknownCountryEvent,
 )
-from cc_calc.country_path_estimation._country_path_estimation import estimate_path
+from cc_calc.country_path_estimation._country_path_estimation import (
+    CountryPathEstimation,
+    CountryPathEstimationError,
+)
 
 __all__ = [
     "ASCountryMap",
@@ -19,7 +22,8 @@ __all__ = [
     "ASCountryMapRepositoryError",
     "CaidaASOrganizationRepository",
     "CountryPath",
+    "CountryPathEstimation",
+    "CountryPathEstimationError",
     "CountryPathEvent",
-    "estimate_path",
     "UnknownCountryEvent",
 ]

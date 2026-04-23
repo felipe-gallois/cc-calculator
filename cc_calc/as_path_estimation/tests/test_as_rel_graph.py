@@ -58,12 +58,13 @@ class TestGetASPath:
         with pytest.raises(ASRelGraphError):
             graph.get_as_path(ASN(65538), ASN(65539))
 
-    def test_when_path_does_not_exist_returns_none(self) -> None:
+    def test_when_path_does_not_exist_raises_exception(self) -> None:
         graph = ASRelGraph()
         graph.add_rel(ASRel(ASN(65536), ASN(65537), RelType.P2C))
         graph.add_rel(ASRel(ASN(65538), ASN(65539), RelType.P2C))
 
-        assert graph.get_as_path(ASN(65536), ASN(65539)) is None
+        with pytest.raises(ASRelGraphError):
+            graph.get_as_path(ASN(65536), ASN(65539))
 
     def test_when_path_has_peer_relationship_returns_path(self) -> None:
         graph = ASRelGraph()
@@ -73,16 +74,18 @@ class TestGetASPath:
             [ASN(65536), ASN(65537)]
         )
 
-    def test_when_only_path_goes_down_then_up_returns_none(self) -> None:
+    def test_when_only_path_goes_down_then_up_raises_exception(self) -> None:
         graph = ASRelGraph()
         graph.add_rel(ASRel(ASN(65536), ASN(65537), RelType.P2C))
         graph.add_rel(ASRel(ASN(65538), ASN(65537), RelType.P2C))
 
-        assert graph.get_as_path(ASN(65536), ASN(65538)) is None
+        with pytest.raises(ASRelGraphError):
+            graph.get_as_path(ASN(65536), ASN(65538))
 
-    def test_when_only_path_goes_sideways_twice_returns_none(self) -> None:
+    def test_when_only_path_goes_sideways_twice_raises_exception(self) -> None:
         graph = ASRelGraph()
         graph.add_rel(ASRel(ASN(65538), ASN(65537), RelType.P2P))
         graph.add_rel(ASRel(ASN(65537), ASN(65536), RelType.P2P))
 
-        assert graph.get_as_path(ASN(65536), ASN(65538)) is None
+        with pytest.raises(ASRelGraphError):
+            graph.get_as_path(ASN(65536), ASN(65538))

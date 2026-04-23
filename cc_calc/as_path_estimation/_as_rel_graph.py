@@ -87,7 +87,7 @@ class ASRelGraph:
         """
         self._digraph.add_edge(rel.src_as, rel.dst_as, type=rel.type)
 
-    def get_as_path(self, src_as: ASN, dst_as: ASN) -> ASPath | None:
+    def get_as_path(self, src_as: ASN, dst_as: ASN) -> ASPath:
         """Calculates the shortest AS path between two ASes.
 
         This method calculates the shortest AS path between two ASes that follows the
@@ -99,10 +99,11 @@ class ASRelGraph:
             src_as: The source AS.
             dst_as: The destination AS.
 
-        Returns: The calculated AS path, or None, if there are no possible paths.
+        Returns: The calculated AS path.
 
         Raises:
-            ASRelGraphError: If the source or the destination ASes are not in the graph.
+            ASRelGraphError: If the source or the destination ASes are not in the graph,
+            or no path exists between ASes.
         """
         if src_as not in self.nodes:
             raise ASRelGraphError(
@@ -143,7 +144,7 @@ class ASRelGraph:
 
                 paths.append(appended_path)
 
-        return None
+        raise ASRelGraphError(f"Did not find path between {src_as} and {dst_as}")
 
     def _is_provider(self, src_as: ASN, dst_as: ASN) -> bool:
         provider = False

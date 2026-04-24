@@ -2,7 +2,7 @@
 
 from cc_calc.as_path_estimation import ASPath
 from cc_calc.autonomous_system import ASRepository, ASRepositoryError
-from cc_calc.country_path_estimation._country_path import CountryPath
+from cc_calc.country_path import CountryPath
 
 
 class CountryPathEstimationError(Exception):

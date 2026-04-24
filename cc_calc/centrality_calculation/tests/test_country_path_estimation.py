@@ -7,12 +7,12 @@ from pytest_mock import MockerFixture
 from cc_calc.as_path_estimation import ASPath
 from cc_calc.autonomous_system import AS, ASRepository, ASRepositoryError
 from cc_calc.autonomous_system_number import ASN
-from cc_calc.country_code import Alpha2Code, CountryCode
-from cc_calc.country_path_estimation._country_path import CountryPath
-from cc_calc.country_path_estimation._country_path_estimation import (
+from cc_calc.centrality_calculation._country_path_estimation import (
     CountryPathEstimation,
     CountryPathEstimationError,
 )
+from cc_calc.country_code import Alpha2Code, CountryCode
+from cc_calc.country_path import CountryPath
 
 
 def as_repo_mock(

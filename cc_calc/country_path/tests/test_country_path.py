@@ -1,5 +1,5 @@
 from cc_calc.country_code import Alpha2Code
-from cc_calc.country_path_estimation._country_path import (
+from cc_calc.country_path._country_path import (
     CountryPath,
     UnknownCountryEvent,
 )

@@ -33,6 +33,19 @@ def test_when_block_is_compared_to_non_block_they_are_not_equal(
     assert ip_block != non_block
 
 
+@pytest.mark.parametrize(
+    "block,expected_len",
+    [
+        (IPBlock(IPPrefix("192.0.2.0/24")), 2**8),
+        (IPBlock(IPPrefix("198.0.0.8/32")), 2**0),
+    ],
+)
+def test_len_is_the_number_of_ip_addresses_in_the_block(
+    block: IPBlock, expected_len: int
+) -> None:
+    assert len(block) == expected_len
+
+
 def test_when_block_is_created_country_is_set_to_none(ip_block: IPBlock) -> None:
     assert ip_block.country is None
 

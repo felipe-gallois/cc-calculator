@@ -50,3 +50,7 @@ class IPPrefix:
     def address_part(self) -> str:
         """The address part of the IP prefix."""
         return str(self._prefix.network_address)
+
+    @property
+    def n_bits(self) -> int:
+        return self._prefix.prefixlen

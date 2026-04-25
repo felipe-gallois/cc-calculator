@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import cast
 
 from cc_calc.autonomous_system_number import ASN
 from cc_calc.country_code import CountryCode
@@ -23,6 +24,9 @@ class IPBlock:
             return False
 
         return self.prefix == other.prefix
+
+    def __len__(self) -> int:
+        return cast(int, 2 ** (32 - self._prefix.n_bits))
 
     @property
     def prefix(self) -> IPPrefix:

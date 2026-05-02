@@ -109,6 +109,10 @@ class CountryPath:
         """The events collected by this object."""
         return copy(self._events)
 
+    @property
+    def countries(self) -> set[CountryCode]:
+        return {country for country in self._path}
+
     def clear_events(self) -> None:
         """Clears the event list of this object."""
         self._events.clear()

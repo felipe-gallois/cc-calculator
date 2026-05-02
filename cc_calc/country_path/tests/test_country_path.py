@@ -100,3 +100,27 @@ class TestCompareCountryPath:
         assert path == CountryPath(
             [Alpha2Code("CA"), Alpha2Code("US"), Alpha2Code("BR")]
         )
+
+
+class TestListCountryPathCountries:
+    def test_when_path_has_interleaved_countries_returns_countries(self) -> None:
+        path = CountryPath(
+            [
+                Alpha2Code("CA"),
+                Alpha2Code("US"),
+                Alpha2Code("CA"),
+            ]
+        )
+
+        assert path.countries == {Alpha2Code("CA"), Alpha2Code("US")}
+
+    def test_when_path_has_none_does_not_return_none_in_countries(self) -> None:
+        path = CountryPath(
+            [
+                Alpha2Code("CA"),
+                Alpha2Code("US"),
+                None,
+            ]
+        )
+
+        assert path.countries == {Alpha2Code("CA"), Alpha2Code("US")}

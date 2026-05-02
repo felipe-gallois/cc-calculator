@@ -2,6 +2,7 @@
 
 import math
 from collections import Counter
+from collections.abc import ItemsView
 
 from cc_calc.country_code import CountryCode
 
@@ -13,6 +14,9 @@ class CentralityTable:
         self._global_centrality = 0
         self._country_centrality: Counter[CountryCode] = Counter()
 
+    def items(self) -> ItemsView[CountryCode, int]:
+        return self._country_centrality.items()
+
     def add(self, country: CountryCode, points: int) -> None:
         """Adds centrality points to a country.
 
@@ -20,6 +24,9 @@ class CentralityTable:
             country: The target country.
             points: The number of points.
         """
+        if points == 0:
+            return
+
         self._global_centrality += points
         self._country_centrality[country] += points
 

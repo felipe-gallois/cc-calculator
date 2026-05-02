@@ -11,10 +11,15 @@ class IPBlockRepositoryError(Exception):
 
 
 class IPBlock:
-    def __init__(self, prefix: IPPrefix) -> None:
+    def __init__(
+        self,
+        prefix: IPPrefix,
+        country: CountryCode | None = None,
+        _as: ASN | None = None,
+    ) -> None:
         self._prefix = prefix
-        self._country: CountryCode | None = None
-        self._as: ASN | None = None
+        self._country = country
+        self._as = _as
 
     def __hash__(self) -> int:
         return hash(self._prefix)
@@ -50,6 +55,14 @@ class IPBlock:
 
 
 class IPBlockSpecification(ABC):
+    @abstractmethod
+    def __hash__(self) -> int:
+        pass
+
+    @abstractmethod
+    def __eq__(self, other: object) -> bool:
+        pass
+
     @abstractmethod
     def is_met_in(self, ip_block: IPBlock) -> bool:
         pass

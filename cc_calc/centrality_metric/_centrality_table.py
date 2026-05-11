@@ -10,9 +10,9 @@ from cc_calc.country_code import CountryCode
 class CentralityTable:
     """A country centrality table."""
 
-    def __init__(self) -> None:
-        self._global_centrality = 0
-        self._country_centrality: Counter[CountryCode] = Counter()
+    def __init__(self, centralities: dict[CountryCode, int] = dict()) -> None:
+        self._country_centrality: Counter[CountryCode] = Counter(centralities)
+        self._global_centrality = self._country_centrality.total()
 
     def items(self) -> ItemsView[CountryCode, int]:
         return self._country_centrality.items()
@@ -29,6 +29,11 @@ class CentralityTable:
 
         self._global_centrality += points
         self._country_centrality[country] += points
+
+    def combine(self, other_table: CentralityTable) -> None:
+        other_counter = other_table._country_centrality
+        self._country_centrality.update(other_counter)
+        self._global_centrality += other_counter.total()
 
     def get(self, country: CountryCode) -> int:
         """Retrieves the centrality points of a country.

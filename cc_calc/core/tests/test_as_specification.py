@@ -1,7 +1,7 @@
 import pytest
 
-from cc_calc.core._autonomous_system_number import ASN
 from cc_calc.core._as_specification import ASSpecification
+from cc_calc.core._autonomous_system_number import ASN
 from cc_calc.core._ip_block import IPBlock
 from cc_calc.core._ip_prefix import IPPrefix
 

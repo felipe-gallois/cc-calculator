@@ -1,5 +1,8 @@
 from itertools import product
 
+from cc_calc.app._update_centrality import (
+    CentralityUpdate,
+)
 from cc_calc.core import (
     ASN,
     ASNRepository,
@@ -9,9 +12,6 @@ from cc_calc.core import (
     CountryCode,
     CountrySpecification,
     IPBlockRepository,
-)
-from cc_calc.app._update_centrality import (
-    CentralityUpdate,
 )
 
 

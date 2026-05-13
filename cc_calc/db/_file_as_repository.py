@@ -4,9 +4,9 @@ from os import PathLike
 from typing import TextIO
 
 from cc_calc.core import (
-    Alpha2Code,
     AS,
     ASN,
+    Alpha2Code,
     ASRepository,
     ASRepositoryError,
 )

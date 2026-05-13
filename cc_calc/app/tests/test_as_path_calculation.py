@@ -3,6 +3,10 @@ from unittest.mock import MagicMock
 import pytest
 from pytest_mock import MockerFixture
 
+from cc_calc.app._as_path_calculation import (
+    ASPathCalculation,
+    ASPathCalculationError,
+)
 from cc_calc.core import (
     ASN,
     ASPath,
@@ -11,10 +15,6 @@ from cc_calc.core import (
     ASRelGraphRepository,
     ASRelGraphRepositoryError,
     RelType,
-)
-from cc_calc.app._as_path_calculation import (
-    ASPathCalculation,
-    ASPathCalculationError,
 )
 
 

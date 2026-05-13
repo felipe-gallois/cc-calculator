@@ -1,6 +1,6 @@
 from cc_calc.core import (
-    Alpha2Code,
     ASN,
+    Alpha2Code,
     IPBlock,
     IPBlockRepository,
     IPBlockRepositoryError,

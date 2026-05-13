@@ -4,13 +4,13 @@ import pytest
 from pytest_mock import MockerFixture
 
 from cc_calc.core import (
-    Alpha2Code,
     ASN,
+    Alpha2Code,
     ASSpecification,
-    IPBlock,
-    IPPrefix,
-    IPBlockRepositoryError,
     CountrySpecification,
+    IPBlock,
+    IPBlockRepositoryError,
+    IPPrefix,
 )
 from cc_calc.db._file_ip_block_repository import (
     FileIPBlockRepository,

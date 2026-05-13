@@ -5,7 +5,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from cc_calc.core import Alpha2Code, ASN, ASRepositoryError
+from cc_calc.core import ASN, Alpha2Code, ASRepositoryError
 from cc_calc.db._file_as_repository import FileASRepository
 
 

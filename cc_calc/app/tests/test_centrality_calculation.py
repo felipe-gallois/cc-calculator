@@ -3,9 +3,11 @@ from unittest.mock import MagicMock
 import pytest
 from pytest_mock import MockerFixture
 
+from cc_calc.app._centrality_calculation import CentralityCalculation
+from cc_calc.app._update_centrality import CentralityUpdate
 from cc_calc.core import (
-    Alpha2Code,
     ASN,
+    Alpha2Code,
     ASNRepository,
     ASPath,
     ASRelGraph,
@@ -17,8 +19,6 @@ from cc_calc.core import (
     IPBlockRepository,
     IPPrefix,
 )
-from cc_calc.app._centrality_calculation import CentralityCalculation
-from cc_calc.app._update_centrality import CentralityUpdate
 
 DEFAULT_COUNTRY_BLOCKS = {
     IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65536))

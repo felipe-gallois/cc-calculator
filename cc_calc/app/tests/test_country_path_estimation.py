@@ -4,19 +4,19 @@ from unittest.mock import MagicMock
 import pytest
 from pytest_mock import MockerFixture
 
+from cc_calc.app._country_path_estimation import (
+    CountryPathEstimation,
+    CountryPathEstimationError,
+)
 from cc_calc.core import (
-    Alpha2Code,
     AS,
     ASN,
+    Alpha2Code,
     ASPath,
     ASRepository,
     ASRepositoryError,
     CountryCode,
     CountryPath,
-)
-from cc_calc.app._country_path_estimation import (
-    CountryPathEstimation,
-    CountryPathEstimationError,
 )
 
 

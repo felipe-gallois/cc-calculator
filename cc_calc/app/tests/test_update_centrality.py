@@ -8,8 +8,8 @@ from cc_calc.app._country_path_estimation import (
 )
 from cc_calc.app._update_centrality import CentralityUpdate
 from cc_calc.core import (
-    Alpha2Code,
     ASN,
+    Alpha2Code,
     ASPath,
     CountryCode,
     CountryPath,

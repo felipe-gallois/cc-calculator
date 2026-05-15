@@ -13,15 +13,11 @@ from cc_calc.core._as_path import ASPath
 from cc_calc.core._autonomous_system_number import ASN
 
 
-class ASRelGraphError(Exception):
-    """Any error raised by an AS relationship graph."""
-
+class PathEstimationError(Exception):
     pass
 
 
-class ASRelGraphRepositoryError(Exception):
-    """Any error raised by an AS relationship graph repository."""
-
+class ASRelLoadingError(Exception):
     pass
 
 
@@ -88,34 +84,8 @@ class ASRelGraph:
         self._digraph.add_edge(rel.src_as, rel.dst_as, type=rel.type)
 
     def get_as_path(self, src_as: ASN, dst_as: ASN) -> ASPath:
-        """Calculates the shortest AS path between two ASes.
-
-        This method calculates the shortest AS path between two ASes that follows the
-        valley-free principle. This principle describes what data paths between ASes
-        can be expected in normal circunstances, given real-world economic
-        relationships between Internet service providers.
-
-        Args:
-            src_as: The source AS.
-            dst_as: The destination AS.
-
-        Returns: The calculated AS path.
-
-        Raises:
-            ASRelGraphError: If the source or the destination ASes are not in the graph,
-            or no path exists between ASes.
-        """
-        if src_as not in self.nodes:
-            raise ASRelGraphError(
-                f"Cannot calculate path from {src_as} because it is not in the graph"
-            )
-
-        if dst_as not in self.nodes:
-            raise ASRelGraphError(
-                f"Cannot calculate path to {dst_as} because it is not in the graph"
-            )
-
         paths: deque[tuple[ASPath, bool]] = deque()
+
         paths.append((ASPath([dst_as]), True))
 
         while len(paths) > 0:
@@ -125,8 +95,8 @@ class ASRelGraph:
             if first_element == src_as:
                 return path
 
-            pred_set = set(self._digraph.predecessors(first_element))
-            succ_set = set(self._digraph.successors(first_element))
+            pred_set = self._get_pred_set(first_element)
+            succ_set = self._get_succ_set(first_element)
             neigh_set = pred_set | succ_set
 
             for neigh in neigh_set:
@@ -144,7 +114,25 @@ class ASRelGraph:
 
                 paths.append(appended_path)
 
-        raise ASRelGraphError(f"Did not find path between {src_as} and {dst_as}")
+        raise PathEstimationError(
+            f"Failed estimating AS path: no paths between {src_as} and {dst_as}"
+        )
+
+    def _get_pred_set(self, asn: ASN) -> set[ASN]:
+        try:
+            return set(self._digraph.predecessors(asn))
+        except nx.NetworkXError as e:
+            raise PathEstimationError(
+                f"Failed estimating AS path: {asn} is not in the relationship graph"
+            ) from e
+
+    def _get_succ_set(self, asn: ASN) -> set[ASN]:
+        try:
+            return set(self._digraph.successors(asn))
+        except nx.NetworkXError as e:
+            raise PathEstimationError(
+                f"Failed estimating AS path: {asn} is not in the relationship graph"
+            ) from e
 
     def _is_provider(self, src_as: ASN, dst_as: ASN) -> bool:
         provider = False
@@ -174,15 +162,6 @@ class ASRelGraph:
 
 
 class ASRelGraphRepository(ABC):
-    """AS relationship graph repository."""
-
     @abstractmethod
     def load_rel_graph(self) -> ASRelGraph:
-        """Loads the AS relationship graph.
-
-        Returns: The relationship graph.
-
-        Raises:
-            ASRelLoadingException: If there is any problem reading the input file.
-        """
         pass

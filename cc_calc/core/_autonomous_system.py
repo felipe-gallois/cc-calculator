@@ -6,7 +6,7 @@ from cc_calc.core._autonomous_system_number import ASN
 from cc_calc.core._country_code import CountryCode
 
 
-class ASRepositoryError(Exception):
+class ASLoadingError(Exception):
     pass
 
 

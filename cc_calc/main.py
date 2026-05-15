@@ -1,7 +1,7 @@
 # TODO: create a proper main file
 
 from cc_calc.app import CentralityCalculation, CentralityUpdate, CountryPathEstimation
-from cc_calc.core import Alpha2Code
+from cc_calc.core import Alpha2Code, ASRepository, IPBlockRepository
 from cc_calc.db import (
     CaidaASNRepository,
     CaidaASRelRepository,
@@ -13,7 +13,7 @@ from cc_calc.db import (
 )
 
 
-def build_ip_block_repository():
+def build_ip_block_repository() -> FileIPBlockRepository:
     prefix_source = RouteViewsIPPrefixSource(
         "data/routeviews-rv2-20251001-1200.pfx2as.gz"
     )
@@ -22,12 +22,14 @@ def build_ip_block_repository():
     return FileIPBlockRepository(prefix_source, asn_resolver, country_resolver)
 
 
-def build_centrality_update(ip_block_repo, as_repo):
+def build_centrality_update(
+    ip_block_repo: IPBlockRepository, as_repo: ASRepository
+) -> CentralityUpdate:
     country_path_estimation = CountryPathEstimation(as_repo)
     return CentralityUpdate(country_path_estimation, ip_block_repo)
 
 
-def build_centrality_calculation():
+def build_centrality_calculation() -> CentralityCalculation:
     ip_block_repo = build_ip_block_repository()
     asn_repo = CaidaASNRepository("data/20251001.as-rel2.txt.bz2")
     rel_graph_repo = CaidaASRelRepository("data/20251001.as-rel2.txt.bz2")
@@ -40,7 +42,7 @@ def build_centrality_calculation():
     )
 
 
-def main():
+def main() -> None:
     centrality_calculation = build_centrality_calculation()
 
     country = Alpha2Code("BR")

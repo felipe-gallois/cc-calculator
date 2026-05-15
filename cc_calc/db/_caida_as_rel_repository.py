@@ -9,7 +9,7 @@ from cc_calc.core import (
     ASRel,
     ASRelGraph,
     ASRelGraphRepository,
-    ASRelGraphRepositoryError,
+    ASRelLoadingError,
     RelType,
 )
 
@@ -67,4 +67,4 @@ class CaidaASRelRepository(ASRelGraphRepository):
             with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
                 return _build_graph(text)
         except Exception as e:
-            raise ASRelGraphRepositoryError("Could not read input file") from e
+            raise ASRelLoadingError("Could not read input file") from e

@@ -7,8 +7,8 @@ from cc_calc.core import (
     AS,
     ASN,
     Alpha2Code,
+    ASLoadingError,
     ASRepository,
-    ASRepositoryError,
 )
 
 
@@ -24,9 +24,9 @@ class FileASRepository(ASRepository):
                 country = id_to_country[id]
                 return AS(asn, Alpha2Code(country))
         except (OSError, gzip.BadGzipFile, EOFError, zlib.error) as e:
-            raise ASRepositoryError("Could not read data from file") from e
+            raise ASLoadingError("Could not read data from file") from e
         except KeyError as e:
-            raise ASRepositoryError(f"{asn} is not in file") from e
+            raise ASLoadingError(f"{asn} is not in file") from e
 
     @staticmethod
     def _collect_maps(file: TextIO) -> tuple[dict[str, str], dict[str, str]]:

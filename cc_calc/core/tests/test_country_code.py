@@ -1,6 +1,6 @@
 import pytest
 
-from cc_calc.core._country_code import Alpha2Code, CountryCodeError
+from cc_calc.core._country_code import Alpha2Code, CountryCodeTypeError
 
 
 class TestCreateAlpha2Code:
@@ -8,15 +8,15 @@ class TestCreateAlpha2Code:
         Alpha2Code("US")
 
     def test_country_code_with_less_than_one_character_raises_exception(self) -> None:
-        with pytest.raises(CountryCodeError):
+        with pytest.raises(CountryCodeTypeError):
             Alpha2Code("U")
 
     def test_country_code_with_more_than_one_character_raises_exception(self) -> None:
-        with pytest.raises(CountryCodeError):
+        with pytest.raises(CountryCodeTypeError):
             Alpha2Code("USA")
 
     def test_country_with_non_alpha_characters_raises_exception(self) -> None:
-        with pytest.raises(CountryCodeError):
+        with pytest.raises(CountryCodeTypeError):
             Alpha2Code("U5")
 
 

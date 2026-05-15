@@ -2,9 +2,7 @@ import gzip
 from abc import ABC, abstractmethod
 from os import PathLike
 
-
-class IPPrefixSourceError(Exception):
-    pass
+from cc_calc.core import IPBlockLoadingError
 
 
 class IPPrefixSource(ABC):
@@ -26,6 +24,6 @@ class RouteViewsIPPrefixSource(IPPrefixSource):
                     tokens = line.split("\t")
                     prefix_set.add(tokens[0] + "/" + tokens[1])
         except Exception as e:
-            raise IPPrefixSourceError("Could not read from IP prefix source") from e
+            raise IPBlockLoadingError("Could not read from IP prefix source") from e
 
         return prefix_set

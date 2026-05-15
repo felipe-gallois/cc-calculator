@@ -6,12 +6,6 @@ from typing import overload
 from cc_calc.core._autonomous_system_number import ASN
 
 
-class ASPathError(Exception):
-    """Any error raised by an ASPath."""
-
-    pass
-
-
 class ASPath:
     """A path of autonomous systems."""
 
@@ -90,10 +84,10 @@ class ASPath:
         Returns: A new AS path with the first AS removed.
 
         Raises:
-            ASPathError: If attempted to remove an AS from an empty AS path.
+            IndexError: If attempted to remove an AS from an empty AS path.
         """
         if len(self) < 1:
-            raise ASPathError("Tried popping an already empty path")
+            raise IndexError("Tried popping an already empty path")
 
         new_sequence = self._path[1:]
         return ASPath(new_sequence)

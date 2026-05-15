@@ -5,7 +5,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from cc_calc.core import ASN, Alpha2Code, ASRepositoryError
+from cc_calc.core import ASN, Alpha2Code, ASLoadingError
 from cc_calc.db._file_as_repository import FileASRepository
 
 
@@ -63,7 +63,7 @@ def test_when_gzip_raises_exception_propagates_the_exception(
     exception: Exception,
 ) -> None:
     with patch("gzip.open", side_effect=exception):
-        with pytest.raises(ASRepositoryError):
+        with pytest.raises(ASLoadingError):
             as_repo.load_as(ASN(65536))
 
 
@@ -71,7 +71,7 @@ def test_when_asn_is_not_in_file_raises_exception(
     as_repo: FileASRepository, mock_content: Any
 ) -> None:
     with patch("gzip.open", mock_content):
-        with pytest.raises(ASRepositoryError):
+        with pytest.raises(ASLoadingError):
             as_repo.load_as(ASN(65537))
 
 

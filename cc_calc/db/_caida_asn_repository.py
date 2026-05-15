@@ -4,8 +4,8 @@ from typing import TextIO
 
 from cc_calc.core import (
     ASN,
+    ASNLoadingError,
     ASNRepository,
-    ASNRepositoryError,
 )
 
 
@@ -39,4 +39,4 @@ class CaidaASNRepository(ASNRepository):
             with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
                 return {ASN(asn) for asn in _collect_asns(text)}
         except Exception as e:
-            raise ASNRepositoryError("Could not read input file") from e
+            raise ASNLoadingError("Could not read input file") from e

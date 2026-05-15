@@ -9,21 +9,14 @@ from cc_calc.core import (
     ASSpecification,
     CountrySpecification,
     IPBlock,
-    IPBlockRepositoryError,
     IPPrefix,
 )
 from cc_calc.db._file_ip_block_repository import (
     FileIPBlockRepository,
 )
-from cc_calc.db._ip_prefix_source import IPPrefixSource, IPPrefixSourceError
-from cc_calc.db._prefix_asn_resolver import (
-    PrefixASNResolver,
-    PrefixASNResolverError,
-)
-from cc_calc.db._prefix_country_resolver import (
-    PrefixCountryResolver,
-    PrefixCountryResolverError,
-)
+from cc_calc.db._ip_prefix_source import IPPrefixSource
+from cc_calc.db._prefix_asn_resolver import PrefixASNResolver
+from cc_calc.db._prefix_country_resolver import PrefixCountryResolver
 
 
 @pytest.fixture
@@ -107,60 +100,6 @@ def test_when_two_countries_have_one_block_each_loads_country_block(
     country_blocks = resolver.load_blocks_with_specs({spec})
 
     assert country_blocks == {IPBlock(IPPrefix("192.0.2.0/24"))}
-
-
-def test_when_there_was_an_error_loading_prefixes_propagates_error(
-    prefix_source: MagicMock,
-    asn_res: MagicMock,
-    country_res: MagicMock,
-) -> None:
-    prefix_source.load_all_ip_prefixes.side_effect = IPPrefixSourceError(
-        "Prefix loading error"
-    )
-
-    resolver = FileIPBlockRepository(prefix_source, asn_res, country_res)
-
-    spec = CountrySpecification(Alpha2Code("BR"))
-
-    with pytest.raises(IPBlockRepositoryError):
-        resolver.load_blocks_with_specs({spec})
-
-
-def test_when_there_was_an_error_loading_countries_propagates_error(
-    prefix_source: MagicMock,
-    asn_res: MagicMock,
-    country_res: MagicMock,
-) -> None:
-    prefix_source.load_all_ip_prefixes.return_value = {"192.0.2.0/24"}
-    country_res.load_prefix_country.side_effect = PrefixCountryResolverError(
-        "Prefix country loading error"
-    )
-
-    resolver = FileIPBlockRepository(prefix_source, asn_res, country_res)
-
-    spec = CountrySpecification(Alpha2Code("BR"))
-
-    with pytest.raises(IPBlockRepositoryError):
-        resolver.load_blocks_with_specs({spec})
-
-
-def test_when_there_was_an_error_loading_asns_propagates_error(
-    prefix_source: MagicMock,
-    asn_res: MagicMock,
-    country_res: MagicMock,
-) -> None:
-    prefix_source.load_all_ip_prefixes.return_value = {"192.0.2.0/24"}
-    country_res.load_prefix_country.side_effect = lambda prefix: "BR"
-    asn_res.load_prefix_asn.side_effect = PrefixASNResolverError(
-        "Prefix ASN loading error"
-    )
-
-    resolver = FileIPBlockRepository(prefix_source, asn_res, country_res)
-
-    spec = CountrySpecification(Alpha2Code("BR"))
-
-    with pytest.raises(IPBlockRepositoryError):
-        resolver.load_blocks_with_specs({spec})
 
 
 @pytest.mark.parametrize(

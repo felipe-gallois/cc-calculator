@@ -4,9 +4,7 @@ from os import PathLike
 from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
 
-
-class PrefixASNResolverError(Exception):
-    pass
+from cc_calc.core import IPBlockLoadingError
 
 
 class PrefixASNResolver(ABC):
@@ -29,8 +27,8 @@ class MaxMindPrefixASNResolver(PrefixASNResolver):
         except AddressNotFoundError:
             return None
         except ValueError as e:
-            raise PrefixASNResolverError(
+            raise IPBlockLoadingError(
                 "f{prefix} is probably not a valid IP prefix"
             ) from e
         except Exception as e:
-            raise PrefixASNResolverError("Could not read from ASN lookup file") from e
+            raise IPBlockLoadingError("Could not read from ASN lookup file") from e

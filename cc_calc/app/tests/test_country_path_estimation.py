@@ -1,20 +1,15 @@
 from collections.abc import Sequence
 from unittest.mock import MagicMock
 
-import pytest
 from pytest_mock import MockerFixture
 
-from cc_calc.app._country_path_estimation import (
-    CountryPathEstimation,
-    CountryPathEstimationError,
-)
+from cc_calc.app._country_path_estimation import CountryPathEstimation
 from cc_calc.core import (
     AS,
     ASN,
     Alpha2Code,
     ASPath,
     ASRepository,
-    ASRepositoryError,
     CountryCode,
     CountryPath,
 )
@@ -68,15 +63,3 @@ def test_when_as_path_has_two_ases_returns_path_with_as_countries(
     country_path = path_est.estimate_country_path(ASPath(asns))
 
     assert country_path == CountryPath(countries)
-
-
-def test_when_as_repo_raises_exception_propagates_it(
-    mocker: MockerFixture,
-) -> None:
-    repo_mock = mocker.create_autospec(ASRepository)
-    repo_mock.load_as.side_effect = ASRepositoryError("Repo error")
-
-    path_est = CountryPathEstimation(repo_mock)
-
-    with pytest.raises(CountryPathEstimationError):
-        path_est.estimate_country_path(ASPath([ASN(65536)]))

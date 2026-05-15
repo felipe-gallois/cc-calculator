@@ -6,7 +6,7 @@ from cc_calc.core._country_code import CountryCode
 from cc_calc.core._ip_prefix import IPPrefix
 
 
-class IPBlockRepositoryError(Exception):
+class IPBlockLoadingError(Exception):
     pass
 
 

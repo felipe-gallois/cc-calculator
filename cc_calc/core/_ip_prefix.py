@@ -3,9 +3,7 @@
 from ipaddress import IPv4Network, IPv6Network
 
 
-class IPPrefixError(Exception):
-    """Any error raised by IPPrefix."""
-
+class IPPrefixTypeError(Exception):
     pass
 
 
@@ -29,7 +27,7 @@ class IPPrefix:
             try:
                 self._prefix = IPv6Network(prefix_str)
             except Exception:
-                raise IPPrefixError(f"{str} is not a valid IP prefix")
+                raise IPPrefixTypeError(f"{str} is not a valid IP prefix")
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, IPPrefix):

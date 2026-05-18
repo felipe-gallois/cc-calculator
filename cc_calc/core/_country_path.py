@@ -1,27 +1,10 @@
 """Country path and utilities."""
 
-from abc import ABC
 from collections.abc import Iterator, Sequence
-from copy import copy
-from dataclasses import dataclass
 from itertools import chain
 from typing import overload
 
 from cc_calc.core._country_code import CountryCode
-
-
-@dataclass
-class CountryPathEvent(ABC):
-    """Generic country path event."""
-
-    pass
-
-
-@dataclass
-class UnknownCountryEvent(CountryPathEvent):
-    """When at least one of the countries of the country sequence is unknown (None)."""
-
-    pass
 
 
 class CountryPath:
@@ -62,11 +45,6 @@ class CountryPath:
                     )
                 )
 
-        self._events: list[CountryPathEvent] = []
-
-        if None in seq:
-            self._events.append(UnknownCountryEvent())
-
     def __len__(self) -> int:
         return len(self._path)
 
@@ -105,14 +83,5 @@ class CountryPath:
             return None
 
     @property
-    def events(self) -> list[CountryPathEvent]:
-        """The events collected by this object."""
-        return copy(self._events)
-
-    @property
     def countries(self) -> set[CountryCode]:
         return {country for country in self._path}
-
-    def clear_events(self) -> None:
-        """Clears the event list of this object."""
-        self._events.clear()

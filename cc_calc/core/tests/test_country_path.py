@@ -1,24 +1,8 @@
 from cc_calc.core._country_code import Alpha2Code
-from cc_calc.core._country_path import (
-    CountryPath,
-    UnknownCountryEvent,
-)
+from cc_calc.core._country_path import CountryPath
 
 
 class TestCreateCountryPath:
-    def test_when_sequence_has_none_ignores_unknown_countries(self) -> None:
-        path = CountryPath([Alpha2Code("CA"), None, Alpha2Code("BR")])
-        expected_path = CountryPath([Alpha2Code("CA"), Alpha2Code("BR")])
-        assert path == expected_path
-
-    def test_when_sequence_has_none_adds_unknown_country_event(self) -> None:
-        path = CountryPath([Alpha2Code("CA"), None, Alpha2Code("BR")])
-        assert UnknownCountryEvent() in path.events
-
-    def test_when_sequence_does_not_have_none_does_not_add_event(self) -> None:
-        path = CountryPath([Alpha2Code("CA")])
-        assert UnknownCountryEvent() not in path.events
-
     def test_when_sequence_only_has_none_returns_empty_path(self) -> None:
         path = CountryPath([None])
         assert path == CountryPath([])

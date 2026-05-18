@@ -1,3 +1,5 @@
+import logging
+
 from cc_calc.core import (
     ASN,
     Alpha2Code,
@@ -9,6 +11,8 @@ from cc_calc.core import (
 from cc_calc.db._ip_prefix_source import IPPrefixSource
 from cc_calc.db._prefix_asn_resolver import PrefixASNResolver
 from cc_calc.db._prefix_country_resolver import PrefixCountryResolver
+
+logger = logging.getLogger(__name__)
 
 
 class FileIPBlockRepository(IPBlockRepository):
@@ -34,6 +38,8 @@ class FileIPBlockRepository(IPBlockRepository):
 
             if all(spec.is_met_in(block) for spec in specs):
                 country_blocks.add(block)
+
+        logger.info("Loaded IP blocks with specs", extra={"specs": specs})
 
         return country_blocks
 

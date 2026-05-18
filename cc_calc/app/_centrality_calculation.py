@@ -1,3 +1,4 @@
+import logging
 from itertools import product
 
 from cc_calc.app._update_centrality import (
@@ -11,8 +12,11 @@ from cc_calc.core import (
     CentralityTable,
     CountryCode,
     CountrySpecification,
+    IPBlockLoadingError,
     IPBlockRepository,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class CentralityCalculation:
@@ -42,17 +46,31 @@ class CentralityCalculation:
             )
             centralities.combine(centrality_update)
 
+        logger.info(
+            "Calculated centralities for pivot country",
+            extra={"country": pivot_country},
+        )
+
         return centralities
 
     def _get_country_asns(self, country: CountryCode) -> set[ASN]:
-        country_ip_blocks = self._ip_block_repo.load_blocks_with_specs(
-            {CountrySpecification(country)}
-        )
-        return {
-            block.autonomous_system
-            for block in country_ip_blocks
-            if block.autonomous_system is not None
-        }
+        try:
+            country_ip_blocks = self._ip_block_repo.load_blocks_with_specs(
+                {CountrySpecification(country)}
+            )
+            country_asns = {
+                block.autonomous_system
+                for block in country_ip_blocks
+                if block.autonomous_system is not None
+            }
+
+            logger.info("Listed country ASes", extra={"country": country})
+
+            return country_asns
+        except IPBlockLoadingError:
+            message = "Failed calculating centralities: could not list country ASes"
+            logger.error(message, extra={"country": country})
+            raise
 
     def _get_centrality_update(
         self,
@@ -61,8 +79,6 @@ class CentralityCalculation:
         src_as: ASN,
         dst_as: ASN,
     ) -> CentralityTable:
-        try:
-            asn_path = rel_graph.get_as_path(src_as, dst_as)
-            return self._centrality_update.execute(asn_path, pivot_country)
-        except Exception:
-            return CentralityTable()
+        asn_path = rel_graph.get_as_path(src_as, dst_as)
+        centrality_update = self._centrality_update.execute(asn_path, pivot_country)
+        return centrality_update

@@ -27,10 +27,12 @@ DEFAULT_COUNTRY_BLOCKS = {
 DEFAULT_WORLD_ASNS = {ASN(65536), ASN(65537)}
 
 DEFAULT_AS_PATH_MAP = {
+    (ASN(65536), ASN(65536)): ASPath([ASN(65536)]),
     (ASN(65536), ASN(65537)): ASPath([ASN(65536), ASN(65537)]),
 }
 
 DEFAULT_CENTRALITY_MAP = {
+    ASPath([ASN(65536)]): CentralityTable(),
     ASPath([ASN(65536), ASN(65537)]): CentralityTable({Alpha2Code("US"): 50}),
 }
 
@@ -49,6 +51,7 @@ test_data = [
         DEFAULT_WORLD_ASNS,
         DEFAULT_AS_PATH_MAP,
         {
+            ASPath([ASN(65536)]): CentralityTable(),
             ASPath([ASN(65536), ASN(65537)]): CentralityTable({Alpha2Code("US"): 100}),
         },
         {Alpha2Code("US"): 100},
@@ -57,9 +60,11 @@ test_data = [
         DEFAULT_COUNTRY_BLOCKS,
         {ASN(65536), ASN(65538)},
         {
+            (ASN(65536), ASN(65536)): ASPath([ASN(65536)]),
             (ASN(65536), ASN(65538)): ASPath([ASN(65536), ASN(65538)]),
         },
         {
+            ASPath([ASN(65536)]): CentralityTable(),
             ASPath([ASN(65536), ASN(65538)]): CentralityTable({Alpha2Code("US"): 50}),
         },
         DEFAULT_CENTRALITIES,
@@ -68,9 +73,13 @@ test_data = [
         DEFAULT_COUNTRY_BLOCKS,
         {ASN(65536), ASN(65537), ASN(65538)},
         {
+            (ASN(65536), ASN(65536)): ASPath([ASN(65536)]),
+            (ASN(65536), ASN(65537)): ASPath([ASN(65536), ASN(65537)]),
             (ASN(65536), ASN(65538)): ASPath([ASN(65536), ASN(65538)]),
         },
         {
+            ASPath([ASN(65536)]): CentralityTable(),
+            ASPath([ASN(65536), ASN(65537)]): CentralityTable(),
             ASPath([ASN(65536), ASN(65538)]): CentralityTable({Alpha2Code("US"): 50}),
         },
         DEFAULT_CENTRALITIES,
@@ -79,10 +88,14 @@ test_data = [
         DEFAULT_COUNTRY_BLOCKS,
         {ASN(65536), ASN(65537), ASN(65538)},
         {
+            (ASN(65536), ASN(65536)): ASPath([ASN(65536)]),
+            (ASN(65536), ASN(65537)): ASPath([ASN(65536), ASN(65537)]),
             (ASN(65536), ASN(65538)): ASPath([ASN(65536), ASN(65538)]),
             (ASN(65537), ASN(65538)): ASPath([ASN(65537), ASN(65538)]),
         },
         {
+            ASPath([ASN(65536)]): CentralityTable(),
+            ASPath([ASN(65536), ASN(65537)]): CentralityTable(),
             ASPath([ASN(65536), ASN(65538)]): CentralityTable({Alpha2Code("US"): 50}),
             ASPath([ASN(65537), ASN(65538)]): CentralityTable({Alpha2Code("US"): 50}),
         },

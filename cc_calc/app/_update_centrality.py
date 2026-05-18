@@ -1,3 +1,5 @@
+import logging
+
 from cc_calc.app._country_path_estimation import (
     CountryPathEstimation,
 )
@@ -5,13 +7,21 @@ from cc_calc.app._ip_weight_calculation import (
     calculate_ip_weight,
 )
 from cc_calc.core import (
+    ASLoadingError,
     ASPath,
     ASSpecification,
     CentralityTable,
     CountryCode,
     CountrySpecification,
+    IPBlockLoadingError,
     IPBlockRepository,
 )
+
+logger = logging.getLogger(__name__)
+
+
+class CentralityUpdateError(Exception):
+    pass
 
 
 class CentralityUpdate:
@@ -30,25 +40,37 @@ class CentralityUpdate:
     ) -> CentralityTable:
         table = CentralityTable()
 
-        src_country_blocks = self._ip_block_repo.load_blocks_with_specs(
-            {ASSpecification(as_path[0]), CountrySpecification(src_country)}
-        )
+        try:
+            src_country_blocks = self._ip_block_repo.load_blocks_with_specs(
+                {ASSpecification(as_path[0]), CountrySpecification(src_country)}
+            )
 
-        dst_as_blocks = self._ip_block_repo.load_blocks_with_specs(
-            {ASSpecification(as_path[-1])}
-        )
+            dst_as_blocks = self._ip_block_repo.load_blocks_with_specs(
+                {ASSpecification(as_path[-1])}
+            )
 
-        country_path = self._country_path_estimation.estimate_country_path(as_path)
+            country_path = self._country_path_estimation.estimate_country_path(as_path)
 
-        for country in country_path.countries:
-            if country == src_country:
-                continue
+            for country in country_path.countries:
+                if country == src_country:
+                    continue
 
-            accounted_dst_blocks = {
-                block for block in dst_as_blocks if block.country != country
-            }
+                accounted_dst_blocks = {
+                    block for block in dst_as_blocks if block.country != country
+                }
 
-            weight = calculate_ip_weight(src_country_blocks, accounted_dst_blocks)
-            table.add(country, weight)
+                weight = calculate_ip_weight(src_country_blocks, accounted_dst_blocks)
+                table.add(country, weight)
+
+            logger.info(
+                "Calculated centralities for AS pair",
+                extra={"src_as": as_path[0], "dst_as": as_path[-1]},
+            )
+        except IPBlockLoadingError:
+            message = "Did not get centrality update: could not load block details"
+            logger.warning(message, extra={"src_as": as_path[0], "dst_as": as_path[-1]})
+        except ASLoadingError:
+            message = "Did not get centrality update: could not load AS details"
+            logger.warning(message, extra={"src_as": as_path[0], "dst_as": as_path[-1]})
 
         return table

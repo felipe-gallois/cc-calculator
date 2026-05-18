@@ -1,6 +1,7 @@
 """CAIDA's AS relationship repository."""
 
 import bz2
+import logging
 from os import PathLike
 from typing import TextIO
 
@@ -12,6 +13,8 @@ from cc_calc.core import (
     ASRelLoadingError,
     RelType,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _tokenize(line: str) -> list[str]:
@@ -65,6 +68,12 @@ class CaidaASRelRepository(ASRelGraphRepository):
         """
         try:
             with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
-                return _build_graph(text)
+                rel_graph = _build_graph(text)
+
+            logger.info("Loaded AS relationships")
+
+            return rel_graph
         except Exception as e:
-            raise ASRelLoadingError("Could not read input file") from e
+            message = "Failed loading AS relationships: could not read input file"
+            logger.error(message)
+            raise ASRelLoadingError(message) from e

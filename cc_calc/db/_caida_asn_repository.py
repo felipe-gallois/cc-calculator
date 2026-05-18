@@ -1,4 +1,5 @@
 import bz2
+import logging
 from os import PathLike
 from typing import TextIO
 
@@ -7,6 +8,8 @@ from cc_calc.core import (
     ASNLoadingError,
     ASNRepository,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def _tokenize(line: str) -> list[str]:
@@ -37,6 +40,12 @@ class CaidaASNRepository(ASNRepository):
     def load_all_asns(self) -> set[ASN]:
         try:
             with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
-                return {ASN(asn) for asn in _collect_asns(text)}
+                world_asns = {ASN(asn) for asn in _collect_asns(text)}
+
+            logger.info("Loaded world ASNs")
+
+            return world_asns
         except Exception as e:
-            raise ASNLoadingError("Could not read input file") from e
+            message = "Failed loading world ASNs: could not read input file"
+            logger.error(message)
+            raise ASNLoadingError(message) from e

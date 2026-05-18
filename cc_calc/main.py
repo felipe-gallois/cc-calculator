@@ -1,5 +1,7 @@
 # TODO: create a proper main file
 
+import logging
+
 from cc_calc.app import CentralityCalculation, CentralityUpdate, CountryPathEstimation
 from cc_calc.core import Alpha2Code, ASRepository, IPBlockRepository
 from cc_calc.db import (
@@ -11,6 +13,44 @@ from cc_calc.db import (
     MaxMindPrefixCountryResolver,
     RouteViewsIPPrefixSource,
 )
+
+
+class CustomFormatter(logging.Formatter):
+    grey = "\x1b[38;20m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    fmt = "%(asctime)s [%(levelname)s] %(message)s"
+
+    FORMATS = {
+        logging.DEBUG: grey + fmt + reset,
+        logging.INFO: grey + fmt + reset,
+        logging.WARNING: yellow + fmt + reset,
+        logging.ERROR: red + fmt + reset,
+        logging.CRITICAL: bold_red + fmt + reset,
+    }
+
+    def format(self, record: logging.LogRecord) -> str:
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+
+def setup_logging() -> None:
+    # Create handler
+    handler = logging.StreamHandler()
+    handler.setFormatter(CustomFormatter())
+
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.WARNING)
+
+    # Avoid duplicate handlers if re-running
+    root_logger.handlers.clear()
+
+    # Add handler globally
+    root_logger.addHandler(handler)
 
 
 def build_ip_block_repository() -> FileIPBlockRepository:
@@ -43,6 +83,8 @@ def build_centrality_calculation() -> CentralityCalculation:
 
 
 def main() -> None:
+    setup_logging()
+
     centrality_calculation = build_centrality_calculation()
 
     country = Alpha2Code("BR")

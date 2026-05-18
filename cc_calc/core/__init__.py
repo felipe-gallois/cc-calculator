@@ -17,11 +17,7 @@ from cc_calc.core._autonomous_system_number import (
 )
 from cc_calc.core._centrality_table import CentralityTable
 from cc_calc.core._country_code import Alpha2Code, CountryCode, CountryCodeTypeError
-from cc_calc.core._country_path import (
-    CountryPath,
-    CountryPathEvent,
-    UnknownCountryEvent,
-)
+from cc_calc.core._country_path import CountryPath
 from cc_calc.core._country_specification import CountrySpecification
 from cc_calc.core._ip_block import (
     IPBlock,
@@ -51,7 +47,6 @@ __all__ = [
     "CountryCode",
     "CountryCodeTypeError",
     "CountryPath",
-    "CountryPathEvent",
     "CountrySpecification",
     "IPBlock",
     "IPBlockLoadingError",
@@ -61,5 +56,4 @@ __all__ = [
     "IPPrefixTypeError",
     "PathEstimationError",
     "RelType",
-    "UnknownCountryEvent",
 ]

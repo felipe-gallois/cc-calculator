@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import logging
 from abc import ABC, abstractmethod
 from collections import deque
 from dataclasses import dataclass
@@ -12,8 +11,6 @@ import networkx as nx
 
 from cc_calc.core._as_path import ASPath
 from cc_calc.core._autonomous_system_number import ASN
-
-logger = logging.getLogger(__name__)
 
 
 class PathEstimationError(Exception):
@@ -96,9 +93,6 @@ class ASRelGraph:
             first_element = path[0]
 
             if first_element == src_as:
-                message = "Succeeded estimating AS path"
-                logger.info(message, extra={"src_as": src_as, "dst_as": dst_as})
-
                 return path
 
             pred_set = self._get_pred_set(first_element)
@@ -120,25 +114,23 @@ class ASRelGraph:
 
                 paths.append(appended_path)
 
-        message = "Failed estimating AS path: no paths between ASes"
-        logger.warning(message, extra={"src_as": src_as, "dst_as": dst_as})
-        raise PathEstimationError(message)
+        raise PathEstimationError("Failed estimating AS path: no paths between ASes")
 
     def _get_pred_set(self, asn: ASN) -> set[ASN]:
         try:
             return set(self._digraph.predecessors(asn))
         except nx.NetworkXError as e:
-            message = "Failed estimating AS path: did not expect such ASN"
-            logger.warning(message, extra={"asn": asn})
-            raise PathEstimationError(message) from e
+            raise PathEstimationError(
+                "Failed estimating AS path: did not expect such ASN"
+            ) from e
 
     def _get_succ_set(self, asn: ASN) -> set[ASN]:
         try:
             return set(self._digraph.successors(asn))
         except nx.NetworkXError as e:
-            message = "Failed estimating AS path: did not expect such ASN"
-            logger.warning(message, extra={"asn": asn})
-            raise PathEstimationError(message) from e
+            raise PathEstimationError(
+                "Failed estimating AS path: did not expect such ASN"
+            ) from e
 
     def _is_provider(self, src_as: ASN, dst_as: ASN) -> bool:
         provider = False

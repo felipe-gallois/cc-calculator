@@ -1,11 +1,8 @@
 import gzip
-import logging
 from abc import ABC, abstractmethod
 from os import PathLike
 
 from cc_calc.core import IPBlockLoadingError
-
-logger = logging.getLogger(__name__)
 
 
 class IPPrefixSource(ABC):
@@ -27,10 +24,8 @@ class RouteViewsIPPrefixSource(IPPrefixSource):
                     tokens = line.split("\t")
                     prefix_set.add(tokens[0] + "/" + tokens[1])
         except Exception as e:
-            message = "Failed loading IP prefix list: could not read input file"
-            logger.error(message)
-            raise IPBlockLoadingError(message) from e
-
-        logger.info("Loaded IP prefix list")
+            raise IPBlockLoadingError(
+                "Failed loading IP prefix list: could not read input file"
+            ) from e
 
         return prefix_set

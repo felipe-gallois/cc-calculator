@@ -1,5 +1,4 @@
 import gzip
-import logging
 import zlib
 from os import PathLike
 from typing import TextIO
@@ -11,8 +10,6 @@ from cc_calc.core import (
     ASLoadingError,
     ASRepository,
 )
-
-logger = logging.getLogger(__name__)
 
 
 def _collect_maps(file: TextIO) -> tuple[dict[str, str], dict[str, str]]:
@@ -51,9 +48,9 @@ class FileASRepository(ASRepository):
 
             return AS(asn, self._as_map[asn])
         except KeyError as e:
-            message = "Failed loading AS data: AS is not in input file"
-            logger.error(message, extra={"asn": asn})
-            raise ASLoadingError(message) from e
+            raise ASLoadingError(
+                "Failed loading AS data: AS is not in input file"
+            ) from e
 
     def _get_as_map(self) -> dict[ASN, Alpha2Code]:
         try:
@@ -63,9 +60,7 @@ class FileASRepository(ASRepository):
             return {
                 ASN(asn): Alpha2Code(id_to_country[id]) for asn, id in asn_to_id.items()
             }
-
-            logger.info("Loaded world ASes")
         except (OSError, gzip.BadGzipFile, EOFError, zlib.error) as e:
-            message = "Failed loading world ASes data: could not read data from file"
-            logger.error(message)
-            raise ASLoadingError(message) from e
+            raise ASLoadingError(
+                "Failed loading world ASes data: could not read data from file"
+            ) from e

@@ -1,4 +1,3 @@
-import logging
 from abc import ABC, abstractmethod
 from os import PathLike
 
@@ -6,8 +5,6 @@ from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
 
 from cc_calc.core import IPBlockLoadingError
-
-logger = logging.getLogger(__name__)
 
 
 class PrefixASNResolver(ABC):
@@ -29,19 +26,14 @@ class MaxMindPrefixASNResolver(PrefixASNResolver):
 
             asn = maxmind_as.autonomous_system_number
 
-            logger.info("Loaded ASN of prefix", extra={"prefix": prefix})
-
             return asn
         except AddressNotFoundError:
-            message = "Failed loading ASN of prefix: not found"
-            logger.warning(message, extra={"prefix": prefix})
-
             return None
         except ValueError as e:
-            message = "Failed loading ASN of prefix: invalid IP prefix"
-            logger.warning(message, extra={"prefix": prefix})
-            raise IPBlockLoadingError(message) from e
+            raise IPBlockLoadingError(
+                "Failed loading ASN of prefix: invalid IP prefix"
+            ) from e
         except Exception as e:
-            message = "Failed loading ASN of prefix: could not read input file"
-            logger.warning(message, extra={"prefix": prefix})
-            raise IPBlockLoadingError(message) from e
+            raise IPBlockLoadingError(
+                "Failed loading ASN of prefix: could not read input file"
+            ) from e

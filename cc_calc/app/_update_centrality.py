@@ -38,6 +38,10 @@ class CentralityUpdate:
         as_path: ASPath,
         src_country: CountryCode,
     ) -> CentralityTable:
+        logger.info(
+            f"Calculating centralities for AS pair ({as_path[0]}, {as_path[-1]})"
+        )
+
         table = CentralityTable()
 
         try:
@@ -61,16 +65,11 @@ class CentralityUpdate:
 
                 weight = calculate_ip_weight(src_country_blocks, accounted_dst_blocks)
                 table.add(country, weight)
-
-            logger.info(
-                "Calculated centralities for AS pair",
-                extra={"src_as": as_path[0], "dst_as": as_path[-1]},
-            )
         except IPBlockLoadingError:
             message = "Did not get centrality update: could not load block details"
-            logger.warning(message, extra={"src_as": as_path[0], "dst_as": as_path[-1]})
+            logger.warning(message)
         except ASLoadingError:
             message = "Did not get centrality update: could not load AS details"
-            logger.warning(message, extra={"src_as": as_path[0], "dst_as": as_path[-1]})
+            logger.warning(message)
 
         return table

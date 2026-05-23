@@ -7,7 +7,8 @@ from cc_calc.core._ip_prefix import IPPrefix
 
 
 class IPBlockLoadingError(Exception):
-    pass
+    def __init__(self) -> None:
+        super().__init__("could not read from IP prefix database")
 
 
 class IPBlock:

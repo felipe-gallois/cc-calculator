@@ -1,25 +1,27 @@
 from abc import ABC, abstractmethod
 from typing import Any, Self
 
+_MIN_ASN = 0
 _MAX_ASN = 2**32 - 1
 
 
-class ASNTypeError(Exception):
-    pass
+class ASNRangeError(Exception):
+    def __init__(self, number: int) -> None:
+        self.number = number
+        super().__init__(f"ASN must be between {_MIN_ASN} and {_MAX_ASN}, got {number}")
 
 
 class ASNLoadingError(Exception):
-    pass
+    def __init__(self) -> None:
+        super().__init__("could not read ASN database")
 
 
 class ASN:
     def __init__(self, number: int | str) -> None:
         self._number = int(number)
 
-        if not (0 <= self._number <= _MAX_ASN):
-            raise ASNTypeError(
-                f"{self._number} is not a valid autonomous system number"
-            )
+        if not (_MIN_ASN <= self._number <= _MAX_ASN):
+            raise ASNRangeError(self._number)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, ASN):

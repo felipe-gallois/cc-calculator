@@ -1,5 +1,3 @@
-"""Autonomous system."""
-
 from abc import ABC, abstractmethod
 
 from cc_calc.core._autonomous_system_number import ASN
@@ -7,12 +5,17 @@ from cc_calc.core._country_code import CountryCode
 
 
 class ASLoadingError(Exception):
-    pass
+    def __init__(self) -> None:
+        super().__init__("could not read from AS database")
+
+
+class UnknownASError(Exception):
+    def __init__(self, asn: ASN) -> None:
+        self.asn = asn
+        super().__init__(f"no AS with ASN {asn} in database")
 
 
 class AS:
-    """An autonomous system."""
-
     def __init__(
         self, asn: ASN, country_of_registry: CountryCode | None = None
     ) -> None:

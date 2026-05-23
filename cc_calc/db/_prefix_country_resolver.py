@@ -4,8 +4,6 @@ from os import PathLike
 from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
 
-from cc_calc.core import IPBlockLoadingError
-
 
 class PrefixCountryResolver(ABC):
     @abstractmethod
@@ -30,10 +28,10 @@ class MaxMindPrefixCountryResolver(PrefixCountryResolver):
         except AddressNotFoundError:
             return None
         except ValueError as e:
-            raise IPBlockLoadingError(
+            raise Exception(
                 "Failed loading country of prefix: invalid IP prefix"
             ) from e
         except Exception as e:
-            raise IPBlockLoadingError(
+            raise Exception(
                 "Failed loading country of prefix: could not read input file"
             ) from e

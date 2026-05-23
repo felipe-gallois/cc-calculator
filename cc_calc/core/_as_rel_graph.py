@@ -1,5 +1,3 @@
-"""Autonomous system relationship graph and utilities."""
-
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -13,59 +11,46 @@ from cc_calc.core._as_path import ASPath
 from cc_calc.core._autonomous_system_number import ASN
 
 
+class MissingASError(Exception):
+    def __init__(self, asn: ASN) -> None:
+        self.asn = asn
+        super().__init__(f"AS{asn} is not in the relationships graph")
+
+
 class PathEstimationError(Exception):
-    pass
+    def __init__(self, src_asn: ASN, dst_asn: ASN) -> None:
+        self.src_as = src_asn
+        self.dst_as = dst_asn
+        super().__init__(f"no paths between AS{src_asn} and AS{dst_asn}")
 
 
 class ASRelLoadingError(Exception):
-    pass
+    def __init__(self) -> None:
+        super().__init__("could not read from AS relationship database")
 
 
 class RelType(Enum):
-    """The type of AS relationship."""
-
     P2C = auto()
     P2P = auto()
 
 
 @dataclass(frozen=True)
 class ASRel:
-    """An AS relationship.
-
-    Relationships are implicitly considered reciprocal. Every provider-to-client
-    relationship entails a client-to-provider counterpart. Likewise, a peer-to-peer
-    relationship goes both ways.
-
-    Attributes:
-        src_as: The source AS.
-        dst_as: The destination AS.
-        type: The relationship type.
-    """
-
     src_as: ASN
     dst_as: ASN
     type: RelType
 
 
 class ASRelGraph:
-    """A digraph of autonomous systems and relationship types."""
-
     def __init__(self) -> None:
-        """Initializes the digraph.
-
-        Args:
-            digraph: The internal digraph.
-        """
         self._digraph: nx.DiGraph[ASN] = nx.DiGraph()
 
     @property
     def nodes(self) -> set[ASN]:
-        """The nodes of the graph."""
         return set(self._digraph.nodes)
 
     @property
     def edges(self) -> set[ASRel]:
-        """The edges (relationships) of the graph."""
         edges = set()
 
         for src_as, dst_as, attr in self._digraph.edges(data=True):
@@ -76,14 +61,12 @@ class ASRelGraph:
         return edges
 
     def add_rel(self, rel: ASRel) -> None:
-        """Adds a relationship to the graph.
-
-        Args:
-            rel: The relationship.
-        """
         self._digraph.add_edge(rel.src_as, rel.dst_as, type=rel.type)
 
     def get_as_path(self, src_as: ASN, dst_as: ASN) -> ASPath:
+        if src_as not in self.nodes:
+            raise MissingASError(src_as)
+
         paths: deque[tuple[ASPath, bool]] = deque()
 
         paths.append((ASPath([dst_as]), True))
@@ -114,23 +97,19 @@ class ASRelGraph:
 
                 paths.append(appended_path)
 
-        raise PathEstimationError("Failed estimating AS path: no paths between ASes")
+        raise PathEstimationError(src_as, dst_as)
 
     def _get_pred_set(self, asn: ASN) -> set[ASN]:
         try:
             return set(self._digraph.predecessors(asn))
         except nx.NetworkXError as e:
-            raise PathEstimationError(
-                "Failed estimating AS path: did not expect such ASN"
-            ) from e
+            raise MissingASError(asn) from e
 
     def _get_succ_set(self, asn: ASN) -> set[ASN]:
         try:
             return set(self._digraph.successors(asn))
         except nx.NetworkXError as e:
-            raise PathEstimationError(
-                "Failed estimating AS path: did not expect such ASN"
-            ) from e
+            raise MissingASError(asn) from e
 
     def _is_provider(self, src_as: ASN, dst_as: ASN) -> bool:
         provider = False

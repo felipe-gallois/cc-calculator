@@ -9,6 +9,7 @@ from cc_calc.core import (
     Alpha2Code,
     ASLoadingError,
     ASRepository,
+    UnknownASError,
 )
 
 
@@ -48,9 +49,7 @@ class FileASRepository(ASRepository):
 
             return AS(asn, self._as_map[asn])
         except KeyError as e:
-            raise ASLoadingError(
-                "Failed loading AS data: AS is not in input file"
-            ) from e
+            raise UnknownASError(asn) from e
 
     def _get_as_map(self) -> dict[ASN, Alpha2Code]:
         try:
@@ -61,6 +60,4 @@ class FileASRepository(ASRepository):
                 ASN(asn): Alpha2Code(id_to_country[id]) for asn, id in asn_to_id.items()
             }
         except (OSError, gzip.BadGzipFile, EOFError, zlib.error) as e:
-            raise ASLoadingError(
-                "Failed loading world ASes data: could not read data from file"
-            ) from e
+            raise ASLoadingError() from e

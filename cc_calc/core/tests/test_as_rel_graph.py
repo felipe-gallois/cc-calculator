@@ -4,6 +4,7 @@ from cc_calc.core._as_path import ASPath
 from cc_calc.core._as_rel_graph import (
     ASRel,
     ASRelGraph,
+    MissingASError,
     PathEstimationError,
     RelType,
 )
@@ -52,10 +53,10 @@ class TestGetASPath:
         graph = ASRelGraph()
         graph.add_rel(ASRel(ASN(65537), ASN(65538), RelType.P2C))
 
-        with pytest.raises(PathEstimationError):
+        with pytest.raises(MissingASError):
             graph.get_as_path(ASN(65536), ASN(65537))
 
-        with pytest.raises(PathEstimationError):
+        with pytest.raises(MissingASError):
             graph.get_as_path(ASN(65538), ASN(65539))
 
     def test_when_path_does_not_exist_raises_exception(self) -> None:

@@ -70,6 +70,4 @@ class CaidaASRelRepository(ASRelGraphRepository):
 
             return rel_graph
         except Exception as e:
-            raise ASRelLoadingError(
-                "Failed loading AS relationships: could not read input file"
-            ) from e
+            raise ASRelLoadingError() from e

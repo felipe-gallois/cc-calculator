@@ -5,7 +5,7 @@ from unittest.mock import mock_open, patch
 
 import pytest
 
-from cc_calc.core import ASN, Alpha2Code, ASLoadingError
+from cc_calc.core import ASN, Alpha2Code, ASLoadingError, UnknownASError
 from cc_calc.db._file_as_repository import FileASRepository
 
 
@@ -71,7 +71,7 @@ def test_when_asn_is_not_in_file_raises_exception(
     as_repo: FileASRepository, mock_content: Any
 ) -> None:
     with patch("gzip.open", mock_content):
-        with pytest.raises(ASLoadingError):
+        with pytest.raises(UnknownASError):
             as_repo.load_as(ASN(65537))
 
 

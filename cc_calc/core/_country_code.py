@@ -1,8 +1,10 @@
 from abc import ABC, abstractmethod
 
 
-class CountryCodeTypeError(Exception):
-    pass
+class Alpha2FormatError(Exception):
+    def __init__(self, input: str) -> None:
+        self.input = input
+        super().__init__(f"expected alpha-2 country code, got {input}")
 
 
 class CountryCode(ABC):
@@ -26,7 +28,7 @@ class CountryCode(ABC):
 class Alpha2Code(CountryCode):
     def __init__(self, code: str):
         if len(code) != 2 or (not code.isalpha()):
-            raise CountryCodeTypeError(f"{code} is an invalid alpha-2 country code")
+            raise Alpha2FormatError(code)
 
         self._code = code.upper()
 

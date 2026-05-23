@@ -49,6 +49,4 @@ class CaidaASNRepository(ASNRepository):
 
             return world_asns
         except Exception as e:
-            raise ASNLoadingError(
-                "Failed loading world ASNs: could not read input file"
-            ) from e
+            raise ASNLoadingError() from e

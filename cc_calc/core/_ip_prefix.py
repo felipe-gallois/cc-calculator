@@ -1,24 +1,19 @@
-"""IP prefix."""
-
 from ipaddress import IPv4Network, IPv6Network
 
 
-class IPPrefixTypeError(Exception):
-    pass
+class IPPrefixFormatError(Exception):
+    def __init__(self, input: str) -> None:
+        self.input = input
+        super().__init__(f"expected IPv4 or IPv6, got {input}")
+
+
+class IPPrefixLoadingError(Exception):
+    def __init__(self) -> None:
+        super().__init__("could not read from IP prefix database")
 
 
 class IPPrefix:
-    """An IP prefix."""
-
     def __init__(self, prefix_str: str) -> None:
-        """Initializes an IPPrefix object.
-
-        Args:
-            prefix_str: A string corresponding to the IP prefix.
-
-        Raises:
-            IPPrefixError: If the string's format is invalid.
-        """
         self._prefix: IPv4Network | IPv6Network
 
         try:
@@ -27,7 +22,7 @@ class IPPrefix:
             try:
                 self._prefix = IPv6Network(prefix_str)
             except Exception:
-                raise IPPrefixTypeError(f"{str} is not a valid IP prefix")
+                raise IPPrefixFormatError(prefix_str)
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, IPPrefix):
@@ -46,7 +41,6 @@ class IPPrefix:
 
     @property
     def address_part(self) -> str:
-        """The address part of the IP prefix."""
         return str(self._prefix.network_address)
 
     @property

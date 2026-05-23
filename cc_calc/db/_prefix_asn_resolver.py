@@ -4,8 +4,6 @@ from os import PathLike
 from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
 
-from cc_calc.core import IPBlockLoadingError
-
 
 class PrefixASNResolver(ABC):
     @abstractmethod
@@ -30,10 +28,8 @@ class MaxMindPrefixASNResolver(PrefixASNResolver):
         except AddressNotFoundError:
             return None
         except ValueError as e:
-            raise IPBlockLoadingError(
-                "Failed loading ASN of prefix: invalid IP prefix"
-            ) from e
+            raise Exception("Failed loading ASN of prefix: invalid IP prefix") from e
         except Exception as e:
-            raise IPBlockLoadingError(
+            raise Exception(
                 "Failed loading ASN of prefix: could not read input file"
             ) from e

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any, Self
 
 _MAX_ASN = 2**32 - 1
 
@@ -34,6 +35,12 @@ class ASN:
 
     def __hash__(self) -> int:
         return hash(self._number)
+
+    def __copy__(self) -> Self:
+        return self
+
+    def __deepcopy__(self, memo: dict[int, Any]) -> Self:
+        return self
 
 
 class ASNRepository(ABC):

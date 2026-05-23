@@ -26,7 +26,23 @@ class FileIPBlockRepository(IPBlockRepository):
         self._asn_resolver = asn_resolver
         self._country_resolver = country_resolver
 
+        self._ip_blocks: set[IPBlock] | None = None
+
     def load_blocks_with_specs(self, specs: set[IPBlockSpecification]) -> set[IPBlock]:
+        if self._ip_blocks is None:
+            self._ip_blocks = self._get_blocks()
+
+        blocks_with_specs = {
+            block
+            for block in self._ip_blocks
+            if all(spec.is_met_in(block) for spec in specs)
+        }
+
+        logger.info("Loaded IP blocks that match specs", extra={"specs": specs})
+
+        return blocks_with_specs
+
+    def _get_blocks(self) -> set[IPBlock]:
         prefixes = self._prefix_source.load_all_ip_prefixes()
 
         country_blocks = set()
@@ -35,11 +51,9 @@ class FileIPBlockRepository(IPBlockRepository):
             country = self._country_resolver.load_prefix_country(prefix)
             asn = self._asn_resolver.load_prefix_asn(prefix)
             block = FileIPBlockRepository._make_block(prefix, asn, country)
+            country_blocks.add(block)
 
-            if all(spec.is_met_in(block) for spec in specs):
-                country_blocks.add(block)
-
-        logger.info("Loaded IP blocks with specs", extra={"specs": specs})
+        logger.info("Loaded world IP blocks")
 
         return country_blocks
 

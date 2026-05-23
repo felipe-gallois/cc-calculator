@@ -1,5 +1,6 @@
 import bz2
 import logging
+from copy import copy
 from os import PathLike
 from typing import TextIO
 
@@ -36,8 +37,15 @@ def _collect_asns(source: TextIO) -> set[str]:
 class CaidaASNRepository(ASNRepository):
     def __init__(self, path: str | PathLike[str]) -> None:
         self._path = path
+        self._asn_set: set[ASN] | None = None
 
     def load_all_asns(self) -> set[ASN]:
+        if self._asn_set is None:
+            self._asn_set = self._collect_all_asns()
+
+        return copy(self._asn_set)
+
+    def _collect_all_asns(self) -> set[ASN]:
         try:
             with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
                 world_asns = {ASN(asn) for asn in _collect_asns(text)}

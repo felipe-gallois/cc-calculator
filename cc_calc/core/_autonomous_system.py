@@ -19,6 +19,18 @@ class AS:
         self._asn = asn
         self._country_of_registry = country_of_registry
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, AS):
+            return False
+
+        if self._asn != other._asn:
+            return False
+
+        return True
+
+    def __hash__(self) -> int:
+        return hash(self._asn)
+
     @property
     def asn(self) -> ASN:
         return self._asn

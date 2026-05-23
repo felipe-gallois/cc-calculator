@@ -2,6 +2,7 @@
 
 import bz2
 import logging
+from copy import deepcopy
 from os import PathLike
 from typing import TextIO
 
@@ -57,15 +58,15 @@ class CaidaASRelRepository(ASRelGraphRepository):
             path: A path to the file containing the relationships.
         """
         self._path = path
+        self._rel_graph: ASRelGraph | None = None
 
     def load_rel_graph(self) -> ASRelGraph:
-        """Loads autonomous system relationships from CAIDA's dataset.
+        if self._rel_graph is None:
+            self._rel_graph = self.get_rel_graph()
 
-        Returns: An AS relationship graph.
+        return deepcopy(self._rel_graph)
 
-        Raises:
-            ASRelLoadingException: If there is any problem reading the input file.
-        """
+    def get_rel_graph(self) -> ASRelGraph:
         try:
             with bz2.open(self._path, mode="rt", encoding="utf-8") as text:
                 rel_graph = _build_graph(text)

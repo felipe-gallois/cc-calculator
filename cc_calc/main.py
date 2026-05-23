@@ -44,7 +44,7 @@ def setup_logging() -> None:
 
     # Configure root logger
     root_logger = logging.getLogger()
-    root_logger.setLevel(logging.WARNING)
+    root_logger.setLevel(logging.ERROR)
 
     # Avoid duplicate handlers if re-running
     root_logger.handlers.clear()

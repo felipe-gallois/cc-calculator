@@ -15,80 +15,159 @@ def get_multiline_string(input: list[ASRelDTO]) -> str:
     return "\n".join(input_strs)
 
 
-def test_when_bz2_raises_exception_it_wraps_the_exception(
-    mocker: MockerFixture,
-) -> None:
-    mocker.patch(
-        "cc_calc.db._caida_as_rel_db.bz2.open",
-        side_effect=FileNotFoundError(""),
+class TestLoadingRels:
+    def test_when_bz2_raises_exception_it_wraps_the_exception(
+        self,
+        mocker: MockerFixture,
+    ) -> None:
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            side_effect=FileNotFoundError(""),
+        )
+
+        db = CaidaASRelDB("")
+
+        with pytest.raises(ASRelLoadingError):
+            next(db.load_rels())
+
+    @pytest.mark.parametrize("input", ["", "# 65536|65537|0|bgp"])
+    def test_when_file_has_no_as_rels_yields_nothing(
+        self, mocker: MockerFixture, input: ASRelDTO
+    ) -> None:
+        mock_open = mocker.mock_open(read_data=input)
+
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            return_value=mock_open.return_value,
+        )
+
+        db = CaidaASRelDB("")
+
+        it = db.load_rels()
+
+        with pytest.raises(StopIteration):
+            next(it)
+
+    @pytest.mark.parametrize(
+        "input",
+        [
+            ASRelDTO(65536, 65537, RelTypeDTO.P2P),
+            ASRelDTO(65537, 65538, RelTypeDTO.P2C),
+        ],
     )
+    def test_when_file_has_one_as_rel_yields_single_dto(
+        self, mocker: MockerFixture, input: ASRelDTO
+    ) -> None:
+        mock_open = mocker.mock_open(read_data=get_string(input))
 
-    db = CaidaASRelDB("")
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            return_value=mock_open.return_value,
+        )
 
-    with pytest.raises(ASRelLoadingError):
-        next(db.load_rels())
+        db = CaidaASRelDB("")
+
+        it = db.load_rels()
+
+        assert list(it) == [input]
+
+    def test_when_file_has_multiple_as_rels_yields_multiple_dtos(
+        self,
+        mocker: MockerFixture,
+    ) -> None:
+        input = [
+            ASRelDTO(65536, 65537, RelTypeDTO.P2P),
+            ASRelDTO(65537, 65538, RelTypeDTO.P2P),
+        ]
+
+        mock_open = mocker.mock_open(read_data=get_multiline_string(input))
+
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            return_value=mock_open.return_value,
+        )
+
+        db = CaidaASRelDB("")
+
+        it = db.load_rels()
+
+        assert list(it) == input
 
 
-@pytest.mark.parametrize("input", ["", "# 65536|65537|0|bgp"])
-def test_when_file_has_no_as_rels_yields_nothing(
-    mocker: MockerFixture, input: ASRelDTO
-) -> None:
-    mock_open = mocker.mock_open(read_data=input)
+class TestLoadingAllASNs:
+    def test_when_bz2_raises_exception_it_wraps_the_exception(
+        self,
+        mocker: MockerFixture,
+    ) -> None:
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            side_effect=FileNotFoundError(""),
+        )
 
-    mocker.patch(
-        "cc_calc.db._caida_as_rel_db.bz2.open",
-        return_value=mock_open.return_value,
+        db = CaidaASRelDB("")
+
+        with pytest.raises(ASRelLoadingError):
+            next(db.load_all_asns())
+
+    @pytest.mark.parametrize("input", ["", "# 65536|65537|0|bgp"])
+    def test_when_file_has_no_as_rels_yields_nothing(
+        self, mocker: MockerFixture, input: ASRelDTO
+    ) -> None:
+        mock_open = mocker.mock_open(read_data=input)
+
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            return_value=mock_open.return_value,
+        )
+
+        db = CaidaASRelDB("")
+
+        it = db.load_all_asns()
+
+        with pytest.raises(StopIteration):
+            next(it)
+
+    @pytest.mark.parametrize(
+        "input",
+        [
+            ASRelDTO(65536, 65537, RelTypeDTO.P2P),
+            ASRelDTO(65537, 65538, RelTypeDTO.P2C),
+        ],
     )
+    def test_when_file_has_one_as_rel_yields_two_dtos(
+        self, mocker: MockerFixture, input: ASRelDTO
+    ) -> None:
+        mock_open = mocker.mock_open(read_data=get_string(input))
 
-    db = CaidaASRelDB("")
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            return_value=mock_open.return_value,
+        )
 
-    it = db.load_rels()
+        db = CaidaASRelDB("")
 
-    with pytest.raises(StopIteration):
-        next(it)
+        it = db.load_all_asns()
 
+        assert list(it) == [input.src_as, input.dst_as]
 
-@pytest.mark.parametrize(
-    "input",
-    [
-        ASRelDTO(65536, 65537, RelTypeDTO.P2P),
-        ASRelDTO(65537, 65538, RelTypeDTO.P2C),
-    ],
-)
-def test_when_file_has_one_as_rel_yields_single_dto(
-    mocker: MockerFixture, input: ASRelDTO
-) -> None:
-    mock_open = mocker.mock_open(read_data=get_string(input))
+    def test_when_file_has_multiple_as_rels_yields_multiple_dtos(
+        self,
+        mocker: MockerFixture,
+    ) -> None:
+        input = [
+            ASRelDTO(65536, 65537, RelTypeDTO.P2P),
+            ASRelDTO(65537, 65538, RelTypeDTO.P2P),
+        ]
 
-    mocker.patch(
-        "cc_calc.db._caida_as_rel_db.bz2.open",
-        return_value=mock_open.return_value,
-    )
+        mock_open = mocker.mock_open(read_data=get_multiline_string(input))
 
-    db = CaidaASRelDB("")
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            return_value=mock_open.return_value,
+        )
 
-    it = db.load_rels()
+        db = CaidaASRelDB("")
 
-    assert list(it) == [input]
+        it = db.load_all_asns()
 
-
-def test_when_file_has_multiple_as_rels_yields_multiple_dtos(
-    mocker: MockerFixture,
-) -> None:
-    input = [
-        ASRelDTO(65536, 65537, RelTypeDTO.P2P),
-        ASRelDTO(65537, 65538, RelTypeDTO.P2P),
-    ]
-
-    mock_open = mocker.mock_open(read_data=get_multiline_string(input))
-
-    mocker.patch(
-        "cc_calc.db._caida_as_rel_db.bz2.open",
-        return_value=mock_open.return_value,
-    )
-
-    db = CaidaASRelDB("")
-
-    it = db.load_rels()
-
-    assert list(it) == input
+        assert list(it) == [65536, 65537, 65537, 65538]

@@ -1,4 +1,3 @@
-from abc import ABC, abstractmethod
 from typing import Any, Self
 
 _MIN_ASN = 0
@@ -43,9 +42,3 @@ class ASN:
 
     def __deepcopy__(self, memo: dict[int, Any]) -> Self:
         return self
-
-
-class ASNRepository(ABC):
-    @abstractmethod
-    def load_all_asns(self) -> set[ASN]:
-        pass

@@ -17,7 +17,6 @@ from cc_calc.core._autonomous_system_number import (
     ASN,
     ASNLoadingError,
     ASNRangeError,
-    ASNRepository,
 )
 from cc_calc.core._centrality_table import CentralityTable
 from cc_calc.core._country_code import Alpha2Code, Alpha2FormatError, CountryCode
@@ -33,7 +32,6 @@ __all__ = [
     "ASN",
     "ASNLoadingError",
     "ASNRangeError",
-    "ASNRepository",
     "ASLoadingError",
     "ASPath",
     "ASRel",

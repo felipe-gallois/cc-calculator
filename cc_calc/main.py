@@ -5,14 +5,13 @@ import logging
 from cc_calc.app import CentralityCalculation, CentralityUpdate, CountryPathEstimation
 from cc_calc.core import Alpha2Code, ASRepository
 from cc_calc.db import (
-    CaidaASNRepository,
     CaidaASRelDB,
     FileASRepository,
     GeoLiteASNDB,
     GeoLiteCountryDB,
     RouteViewsPrefixToASDB,
 )
-from cc_calc.repo import ASRelGraphRepo, IPBlockRepo
+from cc_calc.repo import ASNRepo, ASRelGraphRepo, IPBlockRepo
 
 
 class CustomFormatter(logging.Formatter):
@@ -69,10 +68,11 @@ def build_centrality_update(
 
 def build_centrality_calculation() -> CentralityCalculation:
     ip_block_repo = build_ip_block_repository()
-    asn_repo = CaidaASNRepository("data/20251001.as-rel2.txt.bz2")
 
     rel_graph_db = CaidaASRelDB("data/20251001.as-rel2.txt.bz2")
     rel_graph_repo = ASRelGraphRepo(rel_graph_db)
+
+    asn_repo = ASNRepo(rel_graph_db)
 
     as_repo = FileASRepository("data/20251001.as-org2info.txt.gz")
     centrality_update = build_centrality_update(ip_block_repo, as_repo)

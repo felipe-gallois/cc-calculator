@@ -8,7 +8,6 @@ from cc_calc.app._update_centrality import CentralityUpdate
 from cc_calc.core import (
     ASN,
     Alpha2Code,
-    ASNRepository,
     ASPath,
     ASRelGraph,
     CentralityTable,
@@ -17,7 +16,7 @@ from cc_calc.core import (
     IPBlock,
     IPPrefix,
 )
-from cc_calc.repo import ASRelGraphRepo, IPBlockRepo
+from cc_calc.repo import ASNRepo, ASRelGraphRepo, IPBlockRepo
 
 DEFAULT_COUNTRY_BLOCKS = {
     IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65536))
@@ -114,7 +113,7 @@ def ip_block_repo_mock(
 
 @pytest.fixture
 def asn_repo_mock(mocker: MockerFixture, request: pytest.FixtureRequest) -> MagicMock:
-    asn_repo_mock = mocker.create_autospec(ASNRepository)
+    asn_repo_mock = mocker.create_autospec(ASNRepo)
     asn_repo_mock.load_all_asns.return_value = request.param
     return asn_repo_mock
 

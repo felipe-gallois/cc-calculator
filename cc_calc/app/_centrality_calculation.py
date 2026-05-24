@@ -6,7 +6,6 @@ from cc_calc.app._update_centrality import (
 )
 from cc_calc.core import (
     ASN,
-    ASNRepository,
     ASPath,
     ASRelGraph,
     CentralityTable,
@@ -15,6 +14,7 @@ from cc_calc.core import (
     PathEstimationError,
 )
 from cc_calc.repo import (
+    ASNRepo,
     ASRelGraphRepo,
     ASRelLoadingError,
     IPBlockLoadingError,
@@ -28,7 +28,7 @@ class CentralityCalculation:
     def __init__(
         self,
         ip_block_repo: IPBlockRepo,
-        asn_repo: ASNRepository,
+        asn_repo: ASNRepo,
         rel_graph_repo: ASRelGraphRepo,
         centrality_update: CentralityUpdate,
     ) -> None:

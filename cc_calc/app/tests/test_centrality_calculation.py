@@ -11,7 +11,6 @@ from cc_calc.core import (
     ASNRepository,
     ASPath,
     ASRelGraph,
-    ASRelGraphRepository,
     CentralityTable,
     CountryCode,
     CountrySpecification,
@@ -19,6 +18,7 @@ from cc_calc.core import (
     IPBlockRepository,
     IPPrefix,
 )
+from cc_calc.repo import ASRelGraphRepo
 
 DEFAULT_COUNTRY_BLOCKS = {
     IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65536))
@@ -129,7 +129,7 @@ def rel_graph_repo_mock(
         src_as, dst_as
     ]
 
-    rel_graph_repo_mock = mocker.create_autospec(ASRelGraphRepository)
+    rel_graph_repo_mock = mocker.create_autospec(ASRelGraphRepo)
     rel_graph_repo_mock.load_rel_graph.return_value = rel_graph_mock
 
     return rel_graph_repo_mock

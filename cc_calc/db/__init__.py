@@ -1,4 +1,4 @@
-from cc_calc.db._caida_as_rel_repository import CaidaASRelRepository
+from cc_calc.db._caida_as_rel_db import CaidaASRelDB
 from cc_calc.db._caida_asn_repository import CaidaASNRepository
 from cc_calc.db._file_as_repository import FileASRepository
 from cc_calc.db._file_ip_block_repository import FileIPBlockRepository
@@ -16,8 +16,8 @@ from cc_calc.db._prefix_country_resolver import (
 )
 
 __all__ = [
-    "CaidaASRelRepository",
     "CaidaASNRepository",
+    "CaidaASRelDB",
     "FileASRepository",
     "FileIPBlockRepository",
     "IPPrefixSource",

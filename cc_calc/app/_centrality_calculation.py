@@ -9,8 +9,6 @@ from cc_calc.core import (
     ASNRepository,
     ASPath,
     ASRelGraph,
-    ASRelGraphRepository,
-    ASRelLoadingError,
     CentralityTable,
     CountryCode,
     CountrySpecification,
@@ -18,6 +16,7 @@ from cc_calc.core import (
     IPBlockRepository,
     PathEstimationError,
 )
+from cc_calc.repo import ASRelGraphRepo, ASRelLoadingError
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +26,7 @@ class CentralityCalculation:
         self,
         ip_block_repo: IPBlockRepository,
         asn_repo: ASNRepository,
-        rel_graph_repo: ASRelGraphRepository,
+        rel_graph_repo: ASRelGraphRepo,
         centrality_update: CentralityUpdate,
     ) -> None:
         self._ip_block_repo = ip_block_repo

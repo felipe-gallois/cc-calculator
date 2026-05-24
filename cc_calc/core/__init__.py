@@ -2,8 +2,6 @@ from cc_calc.core._as_path import ASPath
 from cc_calc.core._as_rel_graph import (
     ASRel,
     ASRelGraph,
-    ASRelGraphRepository,
-    ASRelLoadingError,
     MissingASError,
     PathEstimationError,
     RelType,
@@ -45,9 +43,6 @@ __all__ = [
     "ASPath",
     "ASRel",
     "ASRelGraph",
-    "ASRelGraphRepository",
-    "ASRelGraphRepositoryError",
-    "ASRelLoadingError",
     "ASRepository",
     "ASSpecification",
     "CentralityTable",

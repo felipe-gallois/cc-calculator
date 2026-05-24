@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from abc import ABC, abstractmethod
 from collections import deque
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -9,6 +8,18 @@ import networkx as nx
 
 from cc_calc.core._as_path import ASPath
 from cc_calc.core._autonomous_system_number import ASN
+
+
+class RelType(Enum):
+    P2C = auto()
+    P2P = auto()
+
+
+@dataclass(frozen=True)
+class ASRel:
+    src_as: ASN
+    dst_as: ASN
+    type: RelType
 
 
 class MissingASError(Exception):
@@ -22,23 +33,6 @@ class PathEstimationError(Exception):
         self.src_as = src_asn
         self.dst_as = dst_asn
         super().__init__(f"no paths between AS{src_asn} and AS{dst_asn}")
-
-
-class ASRelLoadingError(Exception):
-    def __init__(self) -> None:
-        super().__init__("could not read from AS relationship database")
-
-
-class RelType(Enum):
-    P2C = auto()
-    P2P = auto()
-
-
-@dataclass(frozen=True)
-class ASRel:
-    src_as: ASN
-    dst_as: ASN
-    type: RelType
 
 
 class ASRelGraph:
@@ -136,9 +130,3 @@ class ASRelGraph:
             pass
 
         return customer
-
-
-class ASRelGraphRepository(ABC):
-    @abstractmethod
-    def load_rel_graph(self) -> ASRelGraph:
-        pass

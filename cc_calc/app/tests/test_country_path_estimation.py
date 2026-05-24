@@ -9,10 +9,10 @@ from cc_calc.core import (
     ASN,
     Alpha2Code,
     ASPath,
-    ASRepository,
     CountryCode,
     CountryPath,
 )
+from cc_calc.repo import ASRepo
 
 
 def as_repo_mock(
@@ -20,7 +20,7 @@ def as_repo_mock(
 ) -> MagicMock:
     as_map = {asn: AS(asn, country) for asn, country in zip(asn_list, country_list)}
 
-    repo_mock = mocker.create_autospec(ASRepository)
+    repo_mock = mocker.create_autospec(ASRepo)
     repo_mock.load_as.side_effect = lambda asn: as_map[asn]
 
     return repo_mock

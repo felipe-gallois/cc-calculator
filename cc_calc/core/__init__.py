@@ -10,7 +10,6 @@ from cc_calc.core._as_specification import ASSpecification
 from cc_calc.core._autonomous_system import (
     AS,
     ASLoadingError,
-    ASRepository,
     UnknownASError,
 )
 from cc_calc.core._autonomous_system_number import (
@@ -36,7 +35,6 @@ __all__ = [
     "ASPath",
     "ASRel",
     "ASRelGraph",
-    "ASRepository",
     "ASSpecification",
     "CentralityTable",
     "CountryCode",

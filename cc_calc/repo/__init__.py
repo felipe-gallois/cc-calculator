@@ -5,6 +5,7 @@ from cc_calc.repo._as_rel_repo import (
     ASRelLoadingError,
     RelTypeDTO,
 )
+from cc_calc.repo._as_repo import ASDB, ASDTO, ASRepo
 from cc_calc.repo._asn_repo import ASNDB, ASNRepo
 from cc_calc.repo._ip_block_repo import (
     ASNDTO,
@@ -17,6 +18,8 @@ from cc_calc.repo._ip_block_repo import (
 )
 
 __all__ = [
+    "ASDB",
+    "ASDTO",
     "ASNDB",
     "ASNDTO",
     "ASNRepo",
@@ -24,6 +27,7 @@ __all__ = [
     "ASRelDTO",
     "ASRelGraphRepo",
     "ASRelLoadingError",
+    "ASRepo",
     "IPBlockLoadingError",
     "IPBlockRepo",
     "IPPrefixDB",

@@ -2,13 +2,14 @@
 
 import logging
 
-from cc_calc.core import ASPath, ASRepository, CountryPath
+from cc_calc.core import ASPath, CountryPath
+from cc_calc.repo import ASRepo
 
 logger = logging.getLogger(__name__)
 
 
 class CountryPathEstimation:
-    def __init__(self, as_repo: ASRepository) -> None:
+    def __init__(self, as_repo: ASRepo) -> None:
         self._as_repo = as_repo
 
     def estimate_country_path(self, as_path: ASPath) -> CountryPath:

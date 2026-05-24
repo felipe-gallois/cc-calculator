@@ -15,10 +15,9 @@ from cc_calc.core import (
     CountryCode,
     CountrySpecification,
     IPBlock,
-    IPBlockRepository,
     IPPrefix,
 )
-from cc_calc.repo import ASRelGraphRepo
+from cc_calc.repo import ASRelGraphRepo, IPBlockRepo
 
 DEFAULT_COUNTRY_BLOCKS = {
     IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65536))
@@ -108,7 +107,7 @@ test_data = [
 def ip_block_repo_mock(
     mocker: MockerFixture, request: pytest.FixtureRequest
 ) -> MagicMock:
-    repo_mock = mocker.create_autospec(IPBlockRepository)
+    repo_mock = mocker.create_autospec(IPBlockRepo)
     repo_mock.load_blocks_with_specs.return_value = request.param
     return repo_mock
 

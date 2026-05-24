@@ -1,22 +1,48 @@
+from abc import ABC, abstractmethod
+from typing import Iterator
+
 from cc_calc.core import (
     ASN,
     Alpha2Code,
     IPBlock,
-    IPBlockRepository,
     IPBlockSpecification,
     IPPrefix,
 )
-from cc_calc.db._ip_prefix_source import IPPrefixSource
-from cc_calc.db._prefix_asn_resolver import PrefixASNResolver
-from cc_calc.db._prefix_country_resolver import PrefixCountryResolver
+
+type ASNDTO = int
+type CountryDTO = str
+type IPPrefixDTO = str
 
 
-class FileIPBlockRepository(IPBlockRepository):
+class IPBlockLoadingError(Exception):
+    def __init__(self) -> None:
+        super().__init__("could not read from IP prefix database")
+
+
+class IPPrefixDB(ABC):
+    @abstractmethod
+    def load_all_ip_prefixes(self) -> Iterator[IPPrefixDTO]:
+        pass
+
+
+class PrefixASNDB(ABC):
+    @abstractmethod
+    def load_prefix_asn(self, prefix: IPPrefixDTO) -> ASNDTO | None:
+        pass
+
+
+class PrefixCountryDB(ABC):
+    @abstractmethod
+    def load_prefix_country(self, prefix: IPPrefixDTO) -> CountryDTO | None:
+        pass
+
+
+class IPBlockRepo:
     def __init__(
         self,
-        prefix_source: IPPrefixSource,
-        asn_resolver: PrefixASNResolver,
-        country_resolver: PrefixCountryResolver,
+        prefix_source: IPPrefixDB,
+        asn_resolver: PrefixASNDB,
+        country_resolver: PrefixCountryDB,
     ) -> None:
         self._prefix_source = prefix_source
         self._asn_resolver = asn_resolver
@@ -44,7 +70,7 @@ class FileIPBlockRepository(IPBlockRepository):
         for prefix in prefixes:
             country = self._country_resolver.load_prefix_country(prefix)
             asn = self._asn_resolver.load_prefix_asn(prefix)
-            block = FileIPBlockRepository._make_block(prefix, asn, country)
+            block = IPBlockRepo._make_block(prefix, asn, country)
             country_blocks.add(block)
 
         return country_blocks

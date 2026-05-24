@@ -11,27 +11,27 @@ from cc_calc.core import (
     IPBlock,
     IPPrefix,
 )
-from cc_calc.db._file_ip_block_repository import (
-    FileIPBlockRepository,
+from cc_calc.repo._ip_block_repo import (
+    IPBlockRepo,
+    IPPrefixDB,
+    PrefixASNDB,
+    PrefixCountryDB,
 )
-from cc_calc.db._ip_prefix_source import IPPrefixSource
-from cc_calc.db._prefix_asn_resolver import PrefixASNResolver
-from cc_calc.db._prefix_country_resolver import PrefixCountryResolver
 
 
 @pytest.fixture
 def prefix_source(mocker: MockerFixture) -> MagicMock:
-    return mocker.create_autospec(IPPrefixSource)
+    return mocker.create_autospec(IPPrefixDB)
 
 
 @pytest.fixture
 def asn_res(mocker: MockerFixture) -> MagicMock:
-    return mocker.create_autospec(PrefixASNResolver)
+    return mocker.create_autospec(PrefixASNDB)
 
 
 @pytest.fixture
 def country_res(mocker: MockerFixture) -> MagicMock:
-    return mocker.create_autospec(PrefixCountryResolver)
+    return mocker.create_autospec(PrefixCountryDB)
 
 
 def test_when_country_has_one_block_loads_block(
@@ -47,7 +47,7 @@ def test_when_country_has_one_block_loads_block(
     asn_res.load_prefix_asn.side_effect = lambda prefix: prefix_map[prefix][0]
     country_res.load_prefix_country.side_effect = lambda prefix: prefix_map[prefix][1]
 
-    resolver = FileIPBlockRepository(prefix_source, asn_res, country_res)
+    resolver = IPBlockRepo(prefix_source, asn_res, country_res)
 
     spec = CountrySpecification(Alpha2Code("BR"))
     country_blocks = resolver.load_blocks_with_specs({spec})
@@ -69,7 +69,7 @@ def test_when_country_has_two_blocks_loads_blocks(
     asn_res.load_prefix_asn.side_effect = lambda prefix: prefix_map[prefix][0]
     country_res.load_prefix_country.side_effect = lambda prefix: prefix_map[prefix][1]
 
-    resolver = FileIPBlockRepository(prefix_source, asn_res, country_res)
+    resolver = IPBlockRepo(prefix_source, asn_res, country_res)
 
     spec = CountrySpecification(Alpha2Code("BR"))
     country_blocks = resolver.load_blocks_with_specs({spec})
@@ -94,7 +94,7 @@ def test_when_two_countries_have_one_block_each_loads_country_block(
     asn_res.load_prefix_asn.side_effect = lambda prefix: prefix_map[prefix][0]
     country_res.load_prefix_country.side_effect = lambda prefix: prefix_map[prefix][1]
 
-    resolver = FileIPBlockRepository(prefix_source, asn_res, country_res)
+    resolver = IPBlockRepo(prefix_source, asn_res, country_res)
 
     spec = CountrySpecification(Alpha2Code("BR"))
     country_blocks = resolver.load_blocks_with_specs({spec})
@@ -121,7 +121,7 @@ def test_when_block_is_returned_asn_and_country_are_correctly_set(
     asn_res.load_prefix_asn.side_effect = lambda prefix: str(asn)
     country_res.load_prefix_country.side_effect = lambda prefix: str(country)
 
-    resolver = FileIPBlockRepository(prefix_source, asn_res, country_res)
+    resolver = IPBlockRepo(prefix_source, asn_res, country_res)
 
     spec = CountrySpecification(country)
     country_blocks = resolver.load_blocks_with_specs({spec})
@@ -146,7 +146,7 @@ def test_when_loading_blocks_with_multiple_specs_returns_correct_blocks(
     asn_res.load_prefix_asn.side_effect = lambda prefix: prefix_map[prefix][0]
     country_res.load_prefix_country.side_effect = lambda prefix: prefix_map[prefix][1]
 
-    resolver = FileIPBlockRepository(prefix_source, asn_res, country_res)
+    resolver = IPBlockRepo(prefix_source, asn_res, country_res)
 
     specs = {CountrySpecification(Alpha2Code("BR")), ASSpecification(ASN(65536))}
     country_blocks = resolver.load_blocks_with_specs(specs)

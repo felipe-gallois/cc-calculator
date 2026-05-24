@@ -12,11 +12,14 @@ from cc_calc.core import (
     CentralityTable,
     CountryCode,
     CountrySpecification,
-    IPBlockLoadingError,
-    IPBlockRepository,
     PathEstimationError,
 )
-from cc_calc.repo import ASRelGraphRepo, ASRelLoadingError
+from cc_calc.repo import (
+    ASRelGraphRepo,
+    ASRelLoadingError,
+    IPBlockLoadingError,
+    IPBlockRepo,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +27,7 @@ logger = logging.getLogger(__name__)
 class CentralityCalculation:
     def __init__(
         self,
-        ip_block_repo: IPBlockRepository,
+        ip_block_repo: IPBlockRepo,
         asn_repo: ASNRepository,
         rel_graph_repo: ASRelGraphRepo,
         centrality_update: CentralityUpdate,

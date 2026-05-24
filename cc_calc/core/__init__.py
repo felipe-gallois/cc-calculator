@@ -23,12 +23,7 @@ from cc_calc.core._centrality_table import CentralityTable
 from cc_calc.core._country_code import Alpha2Code, Alpha2FormatError, CountryCode
 from cc_calc.core._country_path import CountryPath
 from cc_calc.core._country_specification import CountrySpecification
-from cc_calc.core._ip_block import (
-    IPBlock,
-    IPBlockLoadingError,
-    IPBlockRepository,
-    IPBlockSpecification,
-)
+from cc_calc.core._ip_block import IPBlock, IPBlockSpecification
 from cc_calc.core._ip_prefix import IPPrefix, IPPrefixFormatError, IPPrefixLoadingError
 
 __all__ = [
@@ -51,8 +46,6 @@ __all__ = [
     "CountryPath",
     "CountrySpecification",
     "IPBlock",
-    "IPBlockLoadingError",
-    "IPBlockRepository",
     "IPBlockSpecification",
     "IPPrefix",
     "IPPrefixFormatError",

@@ -15,11 +15,10 @@ from cc_calc.core import (
     CountryCode,
     CountryPath,
     IPBlock,
-    IPBlockLoadingError,
-    IPBlockRepository,
     IPBlockSpecification,
     IPPrefix,
 )
+from cc_calc.repo import IPBlockLoadingError, IPBlockRepo
 
 
 @pytest.fixture
@@ -37,7 +36,7 @@ def ip_block_repo_mock(mocker: MockerFixture) -> MagicMock:
 
         return set()
 
-    repo_mock = mocker.create_autospec(IPBlockRepository)
+    repo_mock = mocker.create_autospec(IPBlockRepo)
     repo_mock.load_blocks_with_specs.side_effect = lambda specs: find_block_set(specs)
     return repo_mock
 

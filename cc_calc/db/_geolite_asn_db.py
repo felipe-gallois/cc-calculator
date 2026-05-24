@@ -1,21 +1,21 @@
-from abc import ABC, abstractmethod
 from os import PathLike
 
 from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
 
+from cc_calc.repo._ip_block_repo import (
+    ASNDTO,
+    IPBlockLoadingError,
+    IPPrefixDTO,
+    PrefixASNDB,
+)
 
-class PrefixASNResolver(ABC):
-    @abstractmethod
-    def load_prefix_asn(self, prefix: str) -> int | None:
-        pass
 
-
-class MaxMindPrefixASNResolver(PrefixASNResolver):
+class GeoLiteASNDB(PrefixASNDB):
     def __init__(self, path: str | PathLike[str]) -> None:
         self._path = path
 
-    def load_prefix_asn(self, prefix: str) -> int | None:
+    def load_prefix_asn(self, prefix: IPPrefixDTO) -> ASNDTO | None:
         try:
             first_address = prefix.split("/")[0]
 
@@ -27,9 +27,5 @@ class MaxMindPrefixASNResolver(PrefixASNResolver):
             return asn
         except AddressNotFoundError:
             return None
-        except ValueError as e:
-            raise Exception("Failed loading ASN of prefix: invalid IP prefix") from e
         except Exception as e:
-            raise Exception(
-                "Failed loading ASN of prefix: could not read input file"
-            ) from e
+            raise IPBlockLoadingError() from e

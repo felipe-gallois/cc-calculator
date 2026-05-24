@@ -6,11 +6,6 @@ from cc_calc.core._country_code import CountryCode
 from cc_calc.core._ip_prefix import IPPrefix
 
 
-class IPBlockLoadingError(Exception):
-    def __init__(self) -> None:
-        super().__init__("could not read from IP prefix database")
-
-
 class IPBlock:
     def __init__(
         self,
@@ -66,10 +61,4 @@ class IPBlockSpecification(ABC):
 
     @abstractmethod
     def is_met_in(self, ip_block: IPBlock) -> bool:
-        pass
-
-
-class IPBlockRepository(ABC):
-    @abstractmethod
-    def load_blocks_with_specs(self, specs: set[IPBlockSpecification]) -> set[IPBlock]:
         pass

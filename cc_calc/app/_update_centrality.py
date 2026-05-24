@@ -1,11 +1,7 @@
 import logging
 
-from cc_calc.app._country_path_estimation import (
-    CountryPathEstimation,
-)
-from cc_calc.app._ip_weight_calculation import (
-    calculate_ip_weight,
-)
+from cc_calc.app._country_path_estimation import CountryPathEstimation
+from cc_calc.app._ip_weight_calculation import calculate_ip_weight
 from cc_calc.core import (
     ASLoadingError,
     ASPath,
@@ -13,9 +9,8 @@ from cc_calc.core import (
     CentralityTable,
     CountryCode,
     CountrySpecification,
-    IPBlockLoadingError,
-    IPBlockRepository,
 )
+from cc_calc.repo import IPBlockLoadingError, IPBlockRepo
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +23,7 @@ class CentralityUpdate:
     def __init__(
         self,
         country_path_estimation: CountryPathEstimation,
-        ip_block_repo: IPBlockRepository,
+        ip_block_repo: IPBlockRepo,
     ) -> None:
         self._country_path_estimation = country_path_estimation
         self._ip_block_repo = ip_block_repo

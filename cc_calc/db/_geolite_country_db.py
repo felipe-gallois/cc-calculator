@@ -1,0 +1,31 @@
+from os import PathLike
+
+from geoip2.database import Reader
+from geoip2.errors import AddressNotFoundError
+
+from cc_calc.repo._ip_block_repo import (
+    CountryDTO,
+    IPBlockLoadingError,
+    IPPrefixDTO,
+    PrefixCountryDB,
+)
+
+
+class GeoLiteCountryDB(PrefixCountryDB):
+    def __init__(self, path: str | PathLike[str]) -> None:
+        self._path = path
+
+    def load_prefix_country(self, prefix: IPPrefixDTO) -> CountryDTO | None:
+        try:
+            first_address = prefix.split("/")[0]
+
+            with Reader(self._path) as reader:
+                maxmind_country = reader.country(first_address)
+
+            iso_code = maxmind_country.country.iso_code
+
+            return iso_code
+        except AddressNotFoundError:
+            return None
+        except Exception as e:
+            raise IPBlockLoadingError() from e

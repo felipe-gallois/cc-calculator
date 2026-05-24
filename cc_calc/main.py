@@ -3,17 +3,16 @@
 import logging
 
 from cc_calc.app import CentralityCalculation, CentralityUpdate, CountryPathEstimation
-from cc_calc.core import Alpha2Code, ASRepository, IPBlockRepository
+from cc_calc.core import Alpha2Code, ASRepository
 from cc_calc.db import (
     CaidaASNRepository,
     CaidaASRelDB,
     FileASRepository,
-    FileIPBlockRepository,
-    MaxMindPrefixASNResolver,
-    MaxMindPrefixCountryResolver,
-    RouteViewsIPPrefixSource,
+    GeoLiteASNDB,
+    GeoLiteCountryDB,
+    RouteViewsPrefixToASDB,
 )
-from cc_calc.repo import ASRelGraphRepo
+from cc_calc.repo import ASRelGraphRepo, IPBlockRepo
 
 
 class CustomFormatter(logging.Formatter):
@@ -54,17 +53,15 @@ def setup_logging() -> None:
     root_logger.addHandler(handler)
 
 
-def build_ip_block_repository() -> FileIPBlockRepository:
-    prefix_source = RouteViewsIPPrefixSource(
-        "data/routeviews-rv2-20251001-1200.pfx2as.gz"
-    )
-    asn_resolver = MaxMindPrefixASNResolver("data/GeoLite2-ASN.mmdb")
-    country_resolver = MaxMindPrefixCountryResolver("data/GeoLite2-Country.mmdb")
-    return FileIPBlockRepository(prefix_source, asn_resolver, country_resolver)
+def build_ip_block_repository() -> IPBlockRepo:
+    prefix_db = RouteViewsPrefixToASDB("data/routeviews-rv2-20251001-1200.pfx2as.gz")
+    asn_db = GeoLiteASNDB("data/GeoLite2-ASN.mmdb")
+    country_db = GeoLiteCountryDB("data/GeoLite2-Country.mmdb")
+    return IPBlockRepo(prefix_db, asn_db, country_db)
 
 
 def build_centrality_update(
-    ip_block_repo: IPBlockRepository, as_repo: ASRepository
+    ip_block_repo: IPBlockRepo, as_repo: ASRepository
 ) -> CentralityUpdate:
     country_path_estimation = CountryPathEstimation(as_repo)
     return CentralityUpdate(country_path_estimation, ip_block_repo)

@@ -2,7 +2,7 @@ import gzip
 from os import PathLike
 from typing import Iterator
 
-from cc_calc.repo._ip_block_repo import (
+from cc_calc.repo import (
     IPBlockLoadingError,
     IPPrefixDB,
     IPPrefixDTO,

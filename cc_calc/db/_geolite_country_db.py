@@ -3,7 +3,7 @@ from os import PathLike
 from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
 
-from cc_calc.repo._ip_block_repo import (
+from cc_calc.repo import (
     CountryDTO,
     IPBlockLoadingError,
     IPPrefixDTO,

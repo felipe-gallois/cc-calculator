@@ -1,6 +1,3 @@
-from abc import ABC, abstractmethod
-from typing import Iterator
-
 from cc_calc.core import (
     ASN,
     Alpha2Code,
@@ -8,33 +5,12 @@ from cc_calc.core import (
     IPBlockSpecification,
     IPPrefix,
 )
-
-type ASNDTO = int
-type CountryDTO = str
-type IPPrefixDTO = str
+from cc_calc.repo._database import IPPrefixDB, PrefixASNDB, PrefixCountryDB
 
 
 class IPBlockLoadingError(Exception):
     def __init__(self) -> None:
         super().__init__("could not read from IP prefix database")
-
-
-class IPPrefixDB(ABC):
-    @abstractmethod
-    def load_all_ip_prefixes(self) -> Iterator[IPPrefixDTO]:
-        pass
-
-
-class PrefixASNDB(ABC):
-    @abstractmethod
-    def load_prefix_asn(self, prefix: IPPrefixDTO) -> ASNDTO | None:
-        pass
-
-
-class PrefixCountryDB(ABC):
-    @abstractmethod
-    def load_prefix_country(self, prefix: IPPrefixDTO) -> CountryDTO | None:
-        pass
 
 
 class IPBlockRepo:

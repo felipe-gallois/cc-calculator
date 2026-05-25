@@ -1,32 +1,11 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from enum import Enum, auto
-from typing import Iterator
-
 from cc_calc.core import ASN, ASRel, ASRelGraph, RelType
-
-
-class RelTypeDTO(Enum):
-    P2P = auto()
-    P2C = auto()
-
-
-@dataclass
-class ASRelDTO:
-    src_as: int
-    dst_as: int
-    rel_type: RelTypeDTO
+from cc_calc.repo._database import ASRelDB
+from cc_calc.repo._dto import RelTypeDTO
 
 
 class ASRelLoadingError(Exception):
     def __init__(self) -> None:
         super().__init__("could not read from AS relationship database")
-
-
-class ASRelDB(ABC):
-    @abstractmethod
-    def load_rels(self) -> Iterator[ASRelDTO]:
-        pass
 
 
 class ASRelGraphRepo:

@@ -5,10 +5,7 @@ from geoip2.errors import AddressNotFoundError
 from pytest_mock import MockerFixture
 
 from cc_calc.db._geolite_asn_db import GeoLiteASNDB
-from cc_calc.repo._ip_block_repo import (
-    ASNDTO,
-    IPBlockLoadingError,
-)
+from cc_calc.repo import ASNDTO, IPBlockLoadingError
 
 
 def test_when_reader_raises_exception_it_wraps_the_exception(

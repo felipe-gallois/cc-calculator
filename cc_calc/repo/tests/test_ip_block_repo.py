@@ -11,12 +11,8 @@ from cc_calc.core import (
     IPBlock,
     IPPrefix,
 )
-from cc_calc.repo._ip_block_repo import (
-    IPBlockRepo,
-    IPPrefixDB,
-    PrefixASNDB,
-    PrefixCountryDB,
-)
+from cc_calc.repo._ip_block_repo import IPBlockRepo
+from cc_calc.repo._database import IPPrefixDB, PrefixASNDB, PrefixCountryDB
 
 
 @pytest.fixture

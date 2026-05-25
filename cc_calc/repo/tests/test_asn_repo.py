@@ -2,8 +2,9 @@ import pytest
 from pytest_mock import MockerFixture
 
 from cc_calc.core import ASN
-from cc_calc.repo._asn_repo import ASNDB, ASNRepo
-from cc_calc.repo._ip_block_repo import ASNDTO
+from cc_calc.repo._asn_repo import ASNRepo
+from cc_calc.repo._database import ASNDB
+from cc_calc.repo._dto import ASNDTO
 
 
 @pytest.mark.parametrize(

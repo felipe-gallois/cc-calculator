@@ -2,7 +2,9 @@ import pytest
 from pytest_mock import MockerFixture
 
 from cc_calc.core import ASN, ASRel, RelType
-from cc_calc.repo._as_rel_repo import ASRelDB, ASRelDTO, ASRelGraphRepo, RelTypeDTO
+from cc_calc.repo._as_rel_repo import ASRelGraphRepo
+from cc_calc.repo._database import ASRelDB
+from cc_calc.repo._dto import ASRelDTO, RelTypeDTO
 
 
 @pytest.mark.parametrize(

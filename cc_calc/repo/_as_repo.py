@@ -1,21 +1,5 @@
-from abc import ABC, abstractmethod
-from dataclasses import dataclass
-from typing import Iterator
-
 from cc_calc.core import AS, ASN, Alpha2Code
-from cc_calc.repo._ip_block_repo import ASNDTO, CountryDTO
-
-
-@dataclass
-class ASDTO:
-    asn: ASNDTO
-    country: CountryDTO
-
-
-class ASDB(ABC):
-    @abstractmethod
-    def load_all_ases(self) -> Iterator[ASDTO]:
-        pass
+from cc_calc.repo._database import ASDB
 
 
 class ASRepo:

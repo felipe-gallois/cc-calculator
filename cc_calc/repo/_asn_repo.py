@@ -1,17 +1,7 @@
-from abc import ABC, abstractmethod
 from copy import copy
-from typing import Iterator
 
-from cc_calc.core import (
-    ASN,
-)
-from cc_calc.repo._ip_block_repo import ASNDTO
-
-
-class ASNDB(ABC):
-    @abstractmethod
-    def load_all_asns(self) -> Iterator[ASNDTO]:
-        pass
+from cc_calc.core import ASN
+from cc_calc.repo._database import ASNDB
 
 
 class ASNRepo:

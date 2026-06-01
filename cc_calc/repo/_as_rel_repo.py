@@ -3,11 +3,6 @@ from cc_calc.repo._database import ASRelDB
 from cc_calc.repo._dto import RelTypeDTO
 
 
-class ASRelLoadingError(Exception):
-    def __init__(self) -> None:
-        super().__init__("could not read from AS relationship database")
-
-
 class ASRelGraphRepo:
     def __init__(self, as_rel_db: ASRelDB) -> None:
         self._as_rel_db = as_rel_db

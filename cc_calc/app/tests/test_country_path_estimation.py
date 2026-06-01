@@ -1,6 +1,7 @@
 from collections.abc import Sequence
 from unittest.mock import MagicMock
 
+import pytest
 from pytest_mock import MockerFixture
 
 from cc_calc.app._country_path_estimation import CountryPathEstimation
@@ -12,7 +13,7 @@ from cc_calc.core import (
     CountryCode,
     CountryPath,
 )
-from cc_calc.repo import ASRepo
+from cc_calc.repo import ASRepo, InvalidDBDataFormat, UnreachableDB
 
 
 def as_repo_mock(
@@ -63,3 +64,20 @@ def test_when_as_path_has_two_ases_returns_path_with_as_countries(
     country_path = path_est.estimate_country_path(ASPath(asns))
 
     assert country_path == CountryPath(countries)
+
+
+@pytest.mark.parametrize("exception", [UnreachableDB(""), InvalidDBDataFormat("")])
+def test_when_as_repo_cannot_load_as_it_skips_the_as(
+    mocker: MockerFixture,
+    exception: Exception,
+) -> None:
+    as_path = ASPath([ASN(65536)])
+
+    repo_mock = mocker.create_autospec(ASRepo)
+    repo_mock.load_as.side_effect = exception
+
+    path_est = CountryPathEstimation(repo_mock)
+
+    country_path = path_est.estimate_country_path(as_path)
+
+    assert country_path == CountryPath([])

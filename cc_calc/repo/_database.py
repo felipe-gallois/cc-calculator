@@ -4,6 +4,18 @@ from typing import Iterator
 from cc_calc.repo._dto import ASDTO, ASNDTO, ASRelDTO, CountryDTO, IPPrefixDTO
 
 
+class UnreachableDB(Exception):
+    def __init__(self, name: str) -> None:
+        self.name = name
+        super().__init__(f"could not reach {name}")
+
+
+class InvalidDBDataFormat(Exception):
+    def __init__(self, name: str) -> None:
+        self.name = name
+        super().__init__(f"unexpected data format in {name}")
+
+
 class ASNDB(ABC):
     @abstractmethod
     def load_all_asns(self) -> Iterator[ASNDTO]:

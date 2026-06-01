@@ -2,12 +2,14 @@ from os import PathLike
 
 from geoip2.database import Reader
 from geoip2.errors import AddressNotFoundError
+from maxminddb import InvalidDatabaseError
 
 from cc_calc.repo import (
     ASNDTO,
-    IPBlockLoadingError,
+    InvalidDBDataFormat,
     IPPrefixDTO,
     PrefixASNDB,
+    UnreachableDB,
 )
 
 
@@ -27,5 +29,7 @@ class GeoLiteASNDB(PrefixASNDB):
             return asn
         except AddressNotFoundError:
             return None
-        except Exception as e:
-            raise IPBlockLoadingError() from e
+        except (FileNotFoundError, PermissionError) as e:
+            raise UnreachableDB(str(self._path)) from e
+        except InvalidDatabaseError as e:
+            raise InvalidDBDataFormat(str(self._path)) from e

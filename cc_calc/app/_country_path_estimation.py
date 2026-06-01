@@ -2,8 +2,8 @@
 
 import logging
 
-from cc_calc.core import ASPath, CountryPath
-from cc_calc.repo import ASRepo
+from cc_calc.core import ASN, ASPath, CountryCode, CountryPath
+from cc_calc.repo import ASRepo, InvalidDBDataFormat, UnreachableDB
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +18,11 @@ class CountryPathEstimation:
         country_sequence = []
 
         for asn in as_path:
-            country = self._as_repo.load_as(asn).country_of_registry
+            country = self._get_asn_country(asn)
 
             if country is None:
                 message = (
-                    "Did not compute full country path: could not get country of AS "
+                    "Did not compute full country path: could not get country of AS"
                     f"{asn}"
                 )
                 logger.warning(message)
@@ -30,3 +30,9 @@ class CountryPathEstimation:
             country_sequence.append(country)
 
         return CountryPath(country_sequence)
+
+    def _get_asn_country(self, asn: ASN) -> CountryCode | None:
+        try:
+            return self._as_repo.load_as(asn).country_of_registry
+        except UnreachableDB, InvalidDBDataFormat:
+            return None

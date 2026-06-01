@@ -2,7 +2,12 @@ import pytest
 from pytest_mock import MockerFixture
 
 from cc_calc.db._caida_as_rel_db import CaidaASRelDB
-from cc_calc.repo import ASRelDTO, ASRelLoadingError, RelTypeDTO
+from cc_calc.repo import (
+    ASRelDTO,
+    InvalidDBDataFormat,
+    RelTypeDTO,
+    UnreachableDB,
+)
 
 
 def get_string(input: ASRelDTO) -> str:
@@ -16,20 +21,6 @@ def get_multiline_string(input: list[ASRelDTO]) -> str:
 
 
 class TestLoadingRels:
-    def test_when_bz2_raises_exception_it_wraps_the_exception(
-        self,
-        mocker: MockerFixture,
-    ) -> None:
-        mocker.patch(
-            "cc_calc.db._caida_as_rel_db.bz2.open",
-            side_effect=FileNotFoundError(""),
-        )
-
-        db = CaidaASRelDB("")
-
-        with pytest.raises(ASRelLoadingError):
-            next(db.load_rels())
-
     @pytest.mark.parametrize("input", ["", "# 65536|65537|0|bgp"])
     def test_when_file_has_no_as_rels_yields_nothing(
         self, mocker: MockerFixture, input: ASRelDTO
@@ -93,22 +84,57 @@ class TestLoadingRels:
 
         assert list(it) == input
 
-
-class TestLoadingAllASNs:
-    def test_when_bz2_raises_exception_it_wraps_the_exception(
-        self,
-        mocker: MockerFixture,
+    @pytest.mark.parametrize("exception", [FileNotFoundError(""), PermissionError])
+    def test_when_bz2_cannot_find_or_read_from_file_it_raises_exception(
+        self, mocker: MockerFixture, exception: Exception
     ) -> None:
         mocker.patch(
             "cc_calc.db._caida_as_rel_db.bz2.open",
-            side_effect=FileNotFoundError(""),
+            side_effect=exception,
         )
 
         db = CaidaASRelDB("")
 
-        with pytest.raises(ASRelLoadingError):
-            next(db.load_all_asns())
+        with pytest.raises(UnreachableDB):
+            next(db.load_rels())
 
+    @pytest.mark.parametrize(
+        "exception", [OSError, UnicodeDecodeError("utf-8", b"", 0, 1, ""), ValueError]
+    )
+    def test_when_bz2_cannot_recognize_format_it_raises_exception(
+        self, mocker: MockerFixture, exception: Exception
+    ) -> None:
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            side_effect=exception,
+        )
+
+        db = CaidaASRelDB("")
+
+        with pytest.raises(InvalidDBDataFormat):
+            next(db.load_rels())
+
+    @pytest.mark.parametrize(
+        "input", ["65536|a|0|bgp", "b|65537|1|bgp", "65536|65537|2|bgp"]
+    )
+    def test_when_line_is_malformed_it_ignores_it(
+        self, mocker: MockerFixture, input: str
+    ) -> None:
+        mock_open = mocker.mock_open(read_data=input)
+
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            return_value=mock_open.return_value,
+        )
+
+        db = CaidaASRelDB("")
+
+        it = db.load_rels()
+
+        assert list(it) == []
+
+
+class TestLoadingAllASNs:
     @pytest.mark.parametrize("input", ["", "# 65536|65537|0|bgp"])
     def test_when_file_has_no_as_rels_yields_nothing(
         self, mocker: MockerFixture, input: ASRelDTO
@@ -171,3 +197,50 @@ class TestLoadingAllASNs:
         it = db.load_all_asns()
 
         assert list(it) == [65536, 65537, 65537, 65538]
+
+    @pytest.mark.parametrize("exception", [FileNotFoundError(""), PermissionError])
+    def test_when_bz2_cannot_find_or_read_from_file_it_raises_exception(
+        self, mocker: MockerFixture, exception: Exception
+    ) -> None:
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            side_effect=exception,
+        )
+
+        db = CaidaASRelDB("")
+
+        with pytest.raises(UnreachableDB):
+            next(db.load_all_asns())
+
+    @pytest.mark.parametrize(
+        "exception", [OSError, UnicodeDecodeError("utf-8", b"", 0, 1, ""), ValueError]
+    )
+    def test_when_bz2_cannot_recognize_format_it_raises_exception(
+        self, mocker: MockerFixture, exception: Exception
+    ) -> None:
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            side_effect=exception,
+        )
+
+        db = CaidaASRelDB("")
+
+        with pytest.raises(InvalidDBDataFormat):
+            next(db.load_all_asns())
+
+    @pytest.mark.parametrize("input", ["65536|a|0|bgp", "b|65536|1|bgp"])
+    def test_when_line_is_malformed_it_ignores_it(
+        self, mocker: MockerFixture, input: str
+    ) -> None:
+        mock_open = mocker.mock_open(read_data=input)
+
+        mocker.patch(
+            "cc_calc.db._caida_as_rel_db.bz2.open",
+            return_value=mock_open.return_value,
+        )
+
+        db = CaidaASRelDB("")
+
+        it = db.load_all_asns()
+
+        assert list(it) == [65536]

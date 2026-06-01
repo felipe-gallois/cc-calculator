@@ -8,11 +8,6 @@ from cc_calc.core import (
 from cc_calc.repo._database import IPPrefixDB, PrefixASNDB, PrefixCountryDB
 
 
-class IPBlockLoadingError(Exception):
-    def __init__(self) -> None:
-        super().__init__("could not read from IP prefix database")
-
-
 class IPBlockRepo:
     def __init__(
         self,

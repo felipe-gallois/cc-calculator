@@ -10,7 +10,6 @@ from cc_calc.app._update_centrality import CentralityUpdate
 from cc_calc.core import (
     ASN,
     Alpha2Code,
-    ASLoadingError,
     ASPath,
     CountryCode,
     CountryPath,
@@ -18,7 +17,7 @@ from cc_calc.core import (
     IPBlockSpecification,
     IPPrefix,
 )
-from cc_calc.repo import IPBlockLoadingError, IPBlockRepo
+from cc_calc.repo import IPBlockRepo
 
 
 @pytest.fixture
@@ -91,42 +90,6 @@ def test_when_path_has_src_country_its_centrality_is_not_changed(
     centrality_update = CentralityUpdate(
         country_path_estimation_mock, ip_block_repo_mock
     )
-    centrality_table = centrality_update.execute(as_path, src_country)
-
-    assert len(centrality_table.items()) == 0
-
-
-def test_when_block_repo_raises_exception_it_returns_empty_table(
-    country_path_estimation_mock: MagicMock,
-    ip_block_repo_mock: MagicMock,
-) -> None:
-    as_path = ASPath([ASN(65539)])
-    src_country = Alpha2Code("BR")
-
-    ip_block_repo_mock.load_blocks_with_specs.side_effect = IPBlockLoadingError()
-
-    centrality_update = CentralityUpdate(
-        country_path_estimation_mock, ip_block_repo_mock
-    )
-
-    centrality_table = centrality_update.execute(as_path, src_country)
-
-    assert len(centrality_table.items()) == 0
-
-
-def test_when_path_estimation_raises_exception_it_returns_empty_table(
-    country_path_estimation_mock: MagicMock,
-    ip_block_repo_mock: MagicMock,
-) -> None:
-    as_path = ASPath([ASN(65539)])
-    src_country = Alpha2Code("BR")
-
-    country_path_estimation_mock.estimate_country_path.side_effect = ASLoadingError()
-
-    centrality_update = CentralityUpdate(
-        country_path_estimation_mock, ip_block_repo_mock
-    )
-
     centrality_table = centrality_update.execute(as_path, src_country)
 
     assert len(centrality_table.items()) == 0

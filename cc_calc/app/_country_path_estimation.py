@@ -13,8 +13,6 @@ class CountryPathEstimation:
         self._as_repo = as_repo
 
     def estimate_country_path(self, as_path: ASPath) -> CountryPath:
-        logger.info("Computing country path from AS path")
-
         country_sequence = []
 
         for asn in as_path:

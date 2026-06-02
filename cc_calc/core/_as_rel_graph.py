@@ -66,7 +66,7 @@ class ASRelGraph:
         paths.append((ASPath([dst_as]), True))
 
         while len(paths) > 0:
-            path, went_up = paths.pop()
+            path, went_up = paths.popleft()
             first_element = path[0]
 
             if first_element == src_as:

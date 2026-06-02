@@ -94,3 +94,7 @@ def main() -> None:
     centralities = centrality_calculation.execute(country)
 
     print(centralities.items())
+
+
+if __name__ == "__main__":
+    main()

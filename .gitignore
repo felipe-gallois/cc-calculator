@@ -1,5 +1,6 @@
 # Environment
 .venv/
+.python-version
 
 # Editor config
 .nvim.lua

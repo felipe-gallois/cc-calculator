@@ -96,8 +96,8 @@ def test_when_counter_is_combined_to_another_it_sums_the_points_of_each(
 ) -> None:
     counter.add(Alpha2Code("CA"), 2)
 
-    new_counter = CentralityTable({Alpha2Code("CA"): 1})
-    new_counter.combine(counter)
+    other_counter = CentralityTable({Alpha2Code("CA"): 1})
+    new_counter = other_counter.combine(counter)
 
     assert new_counter.items() == {Alpha2Code("CA"): 3}.items()
 

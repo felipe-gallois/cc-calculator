@@ -1,6 +1,7 @@
 # TODO: create a proper main file
 
 import logging
+import os
 
 from cc_calc.app import CentralityCalculation, CentralityUpdate, CountryPathEstimation
 from cc_calc.core import Alpha2Code
@@ -80,7 +81,11 @@ def build_centrality_calculation() -> CentralityCalculation:
     centrality_update = build_centrality_update(ip_block_repo, as_repo)
 
     return CentralityCalculation(
-        ip_block_repo, asn_repo, rel_graph_repo, centrality_update
+        ip_block_repo,
+        asn_repo,
+        rel_graph_repo,
+        centrality_update,
+        n_threads=os.cpu_count(),
     )
 
 

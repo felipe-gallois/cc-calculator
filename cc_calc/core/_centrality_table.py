@@ -3,6 +3,8 @@
 import math
 from collections import Counter
 from collections.abc import ItemsView
+from copy import deepcopy
+from typing import Self
 
 from cc_calc.core._country_code import CountryCode
 
@@ -30,10 +32,14 @@ class CentralityTable:
         self._global_centrality += points
         self._country_centrality[country] += points
 
-    def combine(self, other_table: CentralityTable) -> None:
+    def combine(self, other_table: CentralityTable) -> Self:
+        new_table = deepcopy(self)
+
         other_counter = other_table._country_centrality
-        self._country_centrality.update(other_counter)
-        self._global_centrality += other_counter.total()
+        new_table._country_centrality.update(other_counter)
+        new_table._global_centrality += other_counter.total()
+
+        return new_table
 
     def get(self, country: CountryCode) -> int:
         """Retrieves the centrality points of a country.

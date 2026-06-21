@@ -89,3 +89,21 @@ class TestGetASPath:
 
         with pytest.raises(MissingASError):
             graph.get_as_path(ASN(65536), ASN(65538))
+
+
+class TestCloneASRelGraph:
+    def test_when_trivial_graph_is_cloned_clone_is_trivial(self) -> None:
+        graph = ASRelGraph()
+        clone = graph.clone()
+        assert clone.nodes == set()
+
+    def test_when_cloned_graph_has_rel_clone_has_rel_too(self) -> None:
+        graph = ASRelGraph()
+        graph.add_rel(ASRel(ASN(65536), ASN(65537), RelType.PROVIDER))
+
+        clone = graph.clone()
+
+        assert clone.edges == {
+            ASRel(ASN(65536), ASN(65537), RelType.PROVIDER),
+            ASRel(ASN(65537), ASN(65536), RelType.CLIENT),
+        }

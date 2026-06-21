@@ -50,6 +50,11 @@ class ASRelGraph:
 
         return edges
 
+    def clone(self) -> "ASRelGraph":
+        clone = ASRelGraph()
+        clone._digraph = self._digraph
+        return clone
+
     def add_rel(self, rel: ASRel) -> None:
         if rel.type == RelType.PROVIDER:
             self._digraph.add_edge(rel.src_as, rel.dst_as, type=RelType.PROVIDER)

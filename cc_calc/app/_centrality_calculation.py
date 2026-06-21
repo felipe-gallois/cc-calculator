@@ -52,7 +52,7 @@ class CentralityCalculation:
             results: list[CentralityTable] = list(
                 pool.map(
                     lambda src_asn: self._get_centrality_update(
-                        rel_graph, pivot_country, src_asn, world_asns
+                        rel_graph.clone(), pivot_country, src_asn, world_asns
                     ),
                     list(country_asns),
                 )

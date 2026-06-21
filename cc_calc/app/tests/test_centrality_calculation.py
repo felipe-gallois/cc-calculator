@@ -127,6 +127,8 @@ def rel_graph_repo_mock(
         src_as, dst_as
     ]
 
+    rel_graph_mock.clone.return_value = rel_graph_mock
+
     rel_graph_repo_mock = mocker.create_autospec(ASRelGraphRepo)
     rel_graph_repo_mock.load_rel_graph.return_value = rel_graph_mock
 

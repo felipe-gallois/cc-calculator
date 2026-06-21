@@ -11,7 +11,6 @@ from cc_calc.core import (
     CountryCode,
     CountrySpecification,
     MissingASError,
-    PathEstimationError,
 )
 from cc_calc.repo import (
     ASNRepo,
@@ -93,7 +92,6 @@ class CentralityCalculation:
                 centralities = centralities.combine(centrality_update)
             except (
                 MissingASError,
-                PathEstimationError,
                 UnreachableDB,
                 InvalidDBDataFormat,
             ) as e:

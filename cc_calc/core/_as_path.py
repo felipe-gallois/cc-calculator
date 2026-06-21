@@ -1,5 +1,3 @@
-"""Autonomous system path."""
-
 from collections.abc import Iterator, Sequence
 from typing import overload
 
@@ -7,14 +5,7 @@ from cc_calc.core._autonomous_system_number import ASN
 
 
 class ASPath:
-    """A path of autonomous systems."""
-
     def __init__(self, path: Sequence[int | str | ASN]) -> None:
-        """Initializes an ASPath object.
-
-        Args:
-            path: The sequence of ASes.
-        """
         self._path = tuple(ASN(x) if not isinstance(x, ASN) else x for x in path)
 
     def __eq__(self, other: object) -> bool:
@@ -58,36 +49,11 @@ class ASPath:
         return self._path[key]
 
     def peek(self) -> ASN | None:
-        """Gets the first AS of the AS path.
-
-        Returns: None, if the AS path is empty; otherwise, the first AS on the path.
-        """
         if len(self) < 1:
             return None
 
         return self._path[0]
 
     def append(self, _as: ASN) -> "ASPath":
-        """Appends an AS to the beggining of the AS path.
-
-        Args:
-            _as: The autonomous system to append to the path.
-
-        Returns: A new AS path with the appended AS.
-        """
-        new_sequence = (_as,) + self._path
-        return ASPath(new_sequence)
-
-    def pop(self) -> "ASPath":
-        """Removes the first AS from the AS path.
-
-        Returns: A new AS path with the first AS removed.
-
-        Raises:
-            IndexError: If attempted to remove an AS from an empty AS path.
-        """
-        if len(self) < 1:
-            raise IndexError("Tried popping an already empty path")
-
-        new_sequence = self._path[1:]
+        new_sequence = self._path + (_as,)
         return ASPath(new_sequence)

@@ -12,11 +12,17 @@ from cc_calc.repo._dto import ASRelDTO, RelTypeDTO
     [
         (
             [ASRelDTO(65536, 65537, RelTypeDTO.P2P)],
-            {ASRel(ASN(65536), ASN(65537), RelType.P2P)},
+            {
+                ASRel(ASN(65536), ASN(65537), RelType.PEER),
+                ASRel(ASN(65537), ASN(65536), RelType.PEER),
+            },
         ),
         (
             [ASRelDTO(65537, 65538, RelTypeDTO.P2C)],
-            {ASRel(ASN(65537), ASN(65538), RelType.P2C)},
+            {
+                ASRel(ASN(65537), ASN(65538), RelType.PROVIDER),
+                ASRel(ASN(65538), ASN(65537), RelType.CLIENT),
+            },
         ),
         (
             [
@@ -24,8 +30,10 @@ from cc_calc.repo._dto import ASRelDTO, RelTypeDTO
                 ASRelDTO(65537, 65538, RelTypeDTO.P2C),
             ],
             {
-                ASRel(ASN(65536), ASN(65537), RelType.P2C),
-                ASRel(ASN(65537), ASN(65538), RelType.P2C),
+                ASRel(ASN(65536), ASN(65537), RelType.PROVIDER),
+                ASRel(ASN(65537), ASN(65536), RelType.CLIENT),
+                ASRel(ASN(65537), ASN(65538), RelType.PROVIDER),
+                ASRel(ASN(65538), ASN(65537), RelType.CLIENT),
             },
         ),
     ],

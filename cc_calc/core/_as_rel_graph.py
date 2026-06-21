@@ -11,8 +11,9 @@ from cc_calc.core._autonomous_system_number import ASN
 
 
 class RelType(Enum):
-    P2C = auto()
-    P2P = auto()
+    PROVIDER = auto()
+    CLIENT = auto()
+    PEER = auto()
 
 
 @dataclass(frozen=True)
@@ -28,16 +29,11 @@ class MissingASError(Exception):
         super().__init__(f"AS{asn} is not in the relationships graph")
 
 
-class PathEstimationError(Exception):
-    def __init__(self, src_asn: ASN, dst_asn: ASN) -> None:
-        self.src_as = src_asn
-        self.dst_as = dst_asn
-        super().__init__(f"no paths between AS{src_asn} and AS{dst_asn}")
-
-
 class ASRelGraph:
     def __init__(self) -> None:
+        self._src: ASN | None = None
         self._digraph: nx.DiGraph[ASN] = nx.DiGraph()
+        self._paths: dict[ASN, ASPath] = {}
 
     @property
     def nodes(self) -> set[ASN]:
@@ -55,78 +51,60 @@ class ASRelGraph:
         return edges
 
     def add_rel(self, rel: ASRel) -> None:
-        self._digraph.add_edge(rel.src_as, rel.dst_as, type=rel.type)
+        if rel.type == RelType.PROVIDER:
+            self._digraph.add_edge(rel.src_as, rel.dst_as, type=RelType.PROVIDER)
+            self._digraph.add_edge(rel.dst_as, rel.src_as, type=RelType.CLIENT)
+        elif rel.type == RelType.CLIENT:
+            self._digraph.add_edge(rel.src_as, rel.dst_as, type=RelType.CLIENT)
+            self._digraph.add_edge(rel.dst_as, rel.src_as, type=RelType.PROVIDER)
+        else:
+            self._digraph.add_edge(rel.src_as, rel.dst_as, type=RelType.PEER)
+            self._digraph.add_edge(rel.dst_as, rel.src_as, type=RelType.PEER)
 
     def get_as_path(self, src_as: ASN, dst_as: ASN) -> ASPath:
-        if src_as not in self.nodes:
-            raise MissingASError(src_as)
+        if self._src != src_as:
+            self._compute_as_paths(src_as)
+            self._src = src_as
 
-        paths: deque[tuple[ASPath, bool]] = deque()
+        return self._search_as_path(dst_as)
 
-        paths.append((ASPath([dst_as]), True))
-
-        while len(paths) > 0:
-            path, went_up = paths.popleft()
-            first_element = path[0]
-
-            if first_element == src_as:
-                return path
-
-            pred_set = self._get_pred_set(first_element)
-            succ_set = self._get_succ_set(first_element)
-            neigh_set = pred_set | succ_set
-
-            for neigh in neigh_set:
-                if neigh in path:
-                    continue
-
-                if (not went_up) and (not self._is_provider(first_element, neigh)):
-                    continue
-
-                appended_path = (
-                    (path.append(neigh), True)
-                    if self._is_customer(first_element, neigh)
-                    else (path.append(neigh), False)
-                )
-
-                paths.append(appended_path)
-
-        raise PathEstimationError(src_as, dst_as)
-
-    def _get_pred_set(self, asn: ASN) -> set[ASN]:
+    def _search_as_path(self, dst_as: ASN) -> ASPath:
         try:
-            return set(self._digraph.predecessors(asn))
-        except nx.NetworkXError as e:
-            raise MissingASError(asn) from e
+            return self._paths[dst_as]
+        except KeyError as e:
+            raise MissingASError(dst_as) from e
 
-    def _get_succ_set(self, asn: ASN) -> set[ASN]:
-        try:
-            return set(self._digraph.successors(asn))
-        except nx.NetworkXError as e:
-            raise MissingASError(asn) from e
-
-    def _is_provider(self, src_as: ASN, dst_as: ASN) -> bool:
-        provider = False
+    def _compute_as_paths(self, src_as: ASN) -> None:
+        self._paths = {src_as: ASPath([src_as])}
+        recent = deque([src_as])
 
         try:
-            rel_type = self._digraph.edges[(src_as, dst_as)]["type"]
+            while len(recent) > 0:
+                updated_node = recent.popleft()
+                neigh_set = self._get_neigh_set(updated_node)
 
-            if rel_type == RelType.P2C:
-                provider = True
-        except KeyError:
-            pass
+                for neigh in neigh_set:
+                    if (neigh not in self._paths.keys()) and (
+                        self._is_valley_free(self._paths[updated_node], neigh)
+                    ):
+                        self._paths[neigh] = self._paths[updated_node].append(neigh)
+                        recent.append(neigh)
+        except nx.exception.NetworkXError as e:
+            raise MissingASError(src_as) from e
 
-        return provider
-
-    def _is_customer(self, src_as: ASN, dst_as: ASN) -> bool:
-        customer = False
-
+    def _is_valley_free(self, curr_path: ASPath, next_asn: ASN) -> bool:
         try:
-            rel_type = self._digraph.edges[(dst_as, src_as)]["type"]
+            curr_rel = self._digraph[curr_path[-2]][curr_path[-1]]["type"]
+            next_rel = self._digraph[curr_path[-1]][next_asn]["type"]
 
-            if rel_type == RelType.P2C:
-                customer = True
-        except KeyError:
-            pass
+            if (curr_rel in [RelType.PROVIDER, RelType.PEER]) and (
+                next_rel != RelType.PROVIDER
+            ):
+                return False
 
-        return customer
+            return True
+        except IndexError:
+            return True
+
+    def _get_neigh_set(self, asn: ASN) -> set[ASN]:
+        return set(self._digraph.successors(asn))

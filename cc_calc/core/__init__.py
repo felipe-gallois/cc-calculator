@@ -3,7 +3,6 @@ from cc_calc.core._as_rel_graph import (
     ASRel,
     ASRelGraph,
     MissingASError,
-    PathEstimationError,
     RelType,
 )
 from cc_calc.core._as_specification import ASSpecification
@@ -47,7 +46,6 @@ __all__ = [
     "IPPrefixFormatError",
     "IPPrefixLoadingError",
     "MissingASError",
-    "PathEstimationError",
     "RelType",
     "UnknownASError",
 ]

@@ -13,7 +13,9 @@ class ASRelGraphRepo:
         for dto in self._as_rel_db.load_rels():
             src_as = ASN(dto.src_as)
             dst_as = ASN(dto.dst_as)
-            rel_type = RelType.P2P if dto.rel_type is RelTypeDTO.P2P else RelType.P2C
+            rel_type = (
+                RelType.PEER if dto.rel_type is RelTypeDTO.P2P else RelType.PROVIDER
+            )
 
             graph.add_rel(ASRel(src_as, dst_as, rel_type))
 

@@ -1,5 +1,6 @@
 from cc_calc.repo._as_rel_repo import ASRelGraphRepo
 from cc_calc.repo._as_repo import ASRepo
+from cc_calc.repo._as_weight_graph_repo import ASWeightGraphRepo
 from cc_calc.repo._asn_repo import ASNRepo
 from cc_calc.repo._database import (
     ASDB,
@@ -31,6 +32,7 @@ __all__ = [
     "ASRelDTO",
     "ASRelGraphRepo",
     "ASRepo",
+    "ASWeightGraphRepo",
     "CountryDTO",
     "InvalidDBDataFormat",
     "IPBlockRepo",

@@ -6,6 +6,7 @@ from cc_calc.core._as_rel_graph import (
     RelType,
 )
 from cc_calc.core._as_specification import ASSpecification
+from cc_calc.core._as_weight_graph import ASWeightGraph
 from cc_calc.core._autonomous_system import (
     AS,
     ASLoadingError,
@@ -35,6 +36,7 @@ __all__ = [
     "ASRel",
     "ASRelGraph",
     "ASSpecification",
+    "ASWeightGraph",
     "CentralityTable",
     "CountryCode",
     "CountryCodeTypeError",

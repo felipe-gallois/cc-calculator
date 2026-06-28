@@ -12,6 +12,21 @@ def weight_graph() -> ASWeightGraph:
     return ASWeightGraph()
 
 
+def test_when_just_created_it_is_null(
+    weight_graph: ASWeightGraph,
+) -> None:
+    assert weight_graph.is_null()
+
+
+def test_when_one_ip_block_is_added_it_is_not_null(
+    weight_graph: ASWeightGraph,
+) -> None:
+    weight_graph.add_ip_block(
+        IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65536))
+    )
+    assert not weight_graph.is_null()
+
+
 def test_when_just_created_it_returns_no_weights_for_as(
     weight_graph: ASWeightGraph,
 ) -> None:

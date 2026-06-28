@@ -9,6 +9,9 @@ class ASWeightGraph:
     def __init__(self) -> None:
         self._weights: dict[ASN, Counter[CountryCode]] = dict()
 
+    def is_null(self) -> bool:
+        return len(self._weights) == 0
+
     def add_ip_block(self, ip_block: IPBlock) -> None:
         autonomous_system = ip_block.autonomous_system
         country = ip_block.country

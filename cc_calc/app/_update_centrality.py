@@ -1,58 +1,52 @@
 import logging
 
-from cc_calc.app._country_path_estimation import CountryPathEstimation
-from cc_calc.app._ip_weight_calculation import calculate_ip_weight
 from cc_calc.core import (
+    ASN,
     ASPath,
-    ASSpecification,
+    ASWeightGraph,
     CentralityTable,
     CountryCode,
-    CountrySpecification,
 )
-from cc_calc.repo import IPBlockRepo
-
-logger = logging.getLogger(__name__)
+from cc_calc.repo import ASRepo
 
 
 class CentralityUpdate:
-    def __init__(
-        self,
-        country_path_estimation: CountryPathEstimation,
-        ip_block_repo: IPBlockRepo,
-    ) -> None:
-        self._country_path_estimation = country_path_estimation
-        self._ip_block_repo = ip_block_repo
+    logger = logging.getLogger(__name__)
+
+    def __init__(self, as_repo: ASRepo) -> None:
+        self._as_repo = as_repo
 
     def execute(
-        self,
-        as_path: ASPath,
-        src_country: CountryCode,
+        self, path: ASPath, weight_graph: ASWeightGraph, pivot: CountryCode
     ) -> CentralityTable:
-        logger.info(
-            f"Calculating centralities for AS pair ({as_path[0]}, {as_path[-1]})"
-        )
+        update = CentralityTable()
 
-        table = CentralityTable()
+        src_weight = weight_graph.get_as_weights(path.start)[pivot]
 
-        src_country_blocks = self._ip_block_repo.load_blocks_with_specs(
-            {ASSpecification(as_path[0]), CountrySpecification(src_country)}
-        )
+        for dst_country, dst_weight in weight_graph.get_as_weights(path.end).items():
+            total_weight = src_weight * dst_weight
 
-        dst_as_blocks = self._ip_block_repo.load_blocks_with_specs(
-            {ASSpecification(as_path[-1])}
-        )
+            for asn in path:
+                try:
+                    asn_country = self._get_asn_country(asn)
 
-        country_path = self._country_path_estimation.estimate_country_path(as_path)
+                    if (
+                        asn_country is not None
+                        and asn_country != pivot
+                        and asn_country != dst_country
+                    ):
+                        is_not_updated = update.get(asn_country) == 0
 
-        for country in country_path.countries:
-            if country == src_country:
-                continue
+                        if is_not_updated:
+                            update.add(asn_country, total_weight)
+                except KeyError:
+                    self.logger.warning(
+                        "Skipping AS centrality update: AS{asn} is not in repository"
+                    )
+                    continue
 
-            accounted_dst_blocks = {
-                block for block in dst_as_blocks if block.country != country
-            }
+        return update
 
-            weight = calculate_ip_weight(src_country_blocks, accounted_dst_blocks)
-            table.add(country, weight)
-
-        return table
+    def _get_asn_country(self, asn: ASN) -> CountryCode | None:
+        _as = self._as_repo.load_as(asn)
+        return _as.country_of_registry

@@ -48,6 +48,14 @@ class ASPath:
 
         return self._path[key]
 
+    @property
+    def start(self) -> ASN:
+        return self._path[0]
+
+    @property
+    def end(self) -> ASN:
+        return self._path[-1]
+
     def peek(self) -> ASN | None:
         if len(self) < 1:
             return None

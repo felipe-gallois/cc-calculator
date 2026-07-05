@@ -1,95 +1,205 @@
+from collections.abc import Iterator
 from unittest.mock import MagicMock
 
 import pytest
 from pytest_mock import MockerFixture
 
-from cc_calc.app._country_path_estimation import (
-    CountryPathEstimation,
-)
 from cc_calc.app._update_centrality import CentralityUpdate
-from cc_calc.core import (
-    ASN,
-    Alpha2Code,
-    ASPath,
-    CountryCode,
-    CountryPath,
-    IPBlock,
-    IPBlockSpecification,
-    IPPrefix,
-)
-from cc_calc.repo import IPBlockRepo
+from cc_calc.core import AS, ASN, Alpha2Code, ASPath, ASWeightGraph, IPBlock, IPPrefix
+from cc_calc.repo import ASRepo
 
 
 @pytest.fixture
-def ip_block_repo_mock(mocker: MockerFixture) -> MagicMock:
-    def find_block_set(specs: set[IPBlockSpecification]) -> set[IPBlock]:
-        if len(specs) == 2:
-            return {IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65536))}
-
-        if len(specs) == 1:
-            return {
-                IPBlock(IPPrefix("198.51.100.0/24"), Alpha2Code("CA"), ASN(65537)),
-                IPBlock(IPPrefix("203.0.113.0/25"), Alpha2Code("CA"), ASN(65537)),
-                IPBlock(IPPrefix("203.0.113.128/25"), Alpha2Code("US"), ASN(65537)),
-            }
-
-        return set()
-
-    repo_mock = mocker.create_autospec(IPBlockRepo)
-    repo_mock.load_blocks_with_specs.side_effect = lambda specs: find_block_set(specs)
-    return repo_mock
+def as_repo(mocker: MockerFixture) -> Iterator[MagicMock]:
+    yield mocker.create_autospec(ASRepo)
 
 
 @pytest.fixture
-def country_path_estimation_mock(mocker: MockerFixture) -> MagicMock:
-    as_path_map = {
-        ASPath([ASN(65536)]): CountryPath([Alpha2Code("US")]),
-        ASPath([ASN(65538)]): CountryPath([Alpha2Code("MX")]),
-        ASPath([ASN(65539)]): CountryPath([Alpha2Code("BR")]),
-    }
+def as_weight_graph() -> Iterator[ASWeightGraph]:
+    yield ASWeightGraph()
 
-    estimation_mock = mocker.create_autospec(CountryPathEstimation)
-    estimation_mock.estimate_country_path.side_effect = lambda as_path: as_path_map[
-        as_path
-    ]
 
-    return estimation_mock
+@pytest.fixture
+def service(as_repo: MagicMock) -> Iterator[CentralityUpdate]:
+    yield CentralityUpdate(as_repo)
 
 
 @pytest.mark.parametrize(
-    "asn,expected_table",
+    "src_prefix,dst_prefix,path_country,expected_weight",
     [
-        (ASN(65536), {Alpha2Code("US"): (2**8 * (2**8 + 2**7))}),
-        (ASN(65538), {Alpha2Code("MX"): (2**8 * (2**8 + 2**7 + 2**7))}),
+        ("192.0.2.0/24", "198.51.100.0/24", "US", 2**8 * 2**8),
+        ("192.0.2.0/24", "198.51.100.0/28", "MX", 2**8 * 2**4),
     ],
 )
-def test_when_path_has_one_in_between_country_its_centrality_gets_updated(
-    asn: ASN,
-    expected_table: dict[CountryCode, int],
-    country_path_estimation_mock: MagicMock,
-    ip_block_repo_mock: MagicMock,
+def test_when_path_country_is_not_any_of_communicating_countries_it_adds_centrality(
+    src_prefix: str,
+    dst_prefix: str,
+    path_country: str,
+    expected_weight: int,
+    as_repo: MagicMock,
+    as_weight_graph: ASWeightGraph,
+    service: CentralityUpdate,
 ) -> None:
-    as_path = ASPath([asn])
-    src_country = Alpha2Code("BR")
+    as_repo.load_as.side_effect = lambda asn: {
+        ASN(65536): AS(ASN(65536), None),
+        ASN(65537): AS(ASN(65537), Alpha2Code(path_country)),
+        ASN(65538): AS(ASN(65538), None),
+    }[asn]
 
-    centrality_update = CentralityUpdate(
-        country_path_estimation_mock, ip_block_repo_mock
+    ip_blocks = {
+        IPBlock(IPPrefix(src_prefix), Alpha2Code("BR"), ASN(65536)),
+        IPBlock(IPPrefix(dst_prefix), Alpha2Code("CA"), ASN(65538)),
+    }
+
+    for block in ip_blocks:
+        as_weight_graph.add_ip_block(block)
+
+    assert (
+        service.execute(
+            ASPath([ASN(65536), ASN(65537), ASN(65538)]),
+            as_weight_graph,
+            Alpha2Code("BR"),
+        ).items()
+        == {Alpha2Code(path_country): expected_weight}.items()
     )
-    centrality_table = centrality_update.execute(as_path, src_country)
-
-    assert centrality_table.items() == expected_table.items()
 
 
-def test_when_path_has_src_country_its_centrality_is_not_changed(
-    country_path_estimation_mock: MagicMock,
-    ip_block_repo_mock: MagicMock,
+def test_when_path_country_is_src_country_it_does_not_add_centrality(
+    as_repo: MagicMock, as_weight_graph: ASWeightGraph, service: CentralityUpdate
 ) -> None:
-    as_path = ASPath([ASN(65539)])
-    src_country = Alpha2Code("BR")
+    as_repo.load_as.side_effect = lambda asn: {
+        ASN(65536): AS(ASN(65536), None),
+        ASN(65537): AS(ASN(65537), Alpha2Code("US")),
+        ASN(65538): AS(ASN(65538), None),
+    }[asn]
 
-    centrality_update = CentralityUpdate(
-        country_path_estimation_mock, ip_block_repo_mock
+    ip_blocks = {
+        IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("US"), ASN(65536)),
+        IPBlock(IPPrefix("198.51.100.0/24"), Alpha2Code("CA"), ASN(65538)),
+    }
+
+    for block in ip_blocks:
+        as_weight_graph.add_ip_block(block)
+
+    assert (
+        service.execute(
+            ASPath([ASN(65536), ASN(65537), ASN(65538)]),
+            as_weight_graph,
+            Alpha2Code("US"),
+        ).items()
+        == {}.items()
     )
-    centrality_table = centrality_update.execute(as_path, src_country)
 
-    assert len(centrality_table.items()) == 0
+
+def test_when_path_country_is_dst_country_it_does_not_add_centrality(
+    as_repo: MagicMock, as_weight_graph: ASWeightGraph, service: CentralityUpdate
+) -> None:
+    as_repo.load_as.side_effect = lambda asn: {
+        ASN(65536): AS(ASN(65536), None),
+        ASN(65537): AS(ASN(65537), Alpha2Code("US")),
+        ASN(65538): AS(ASN(65538), None),
+    }[asn]
+
+    ip_blocks = {
+        IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65536)),
+        IPBlock(IPPrefix("198.51.100.0/24"), Alpha2Code("US"), ASN(65538)),
+    }
+
+    for block in ip_blocks:
+        as_weight_graph.add_ip_block(block)
+
+    assert (
+        service.execute(
+            ASPath([ASN(65536), ASN(65537), ASN(65538)]),
+            as_weight_graph,
+            Alpha2Code("BR"),
+        ).items()
+        == {}.items()
+    )
+
+
+def test_when_path_has_two_countries_it_adds_centrality_for_both(
+    as_repo: MagicMock, as_weight_graph: ASWeightGraph, service: CentralityUpdate
+) -> None:
+    as_repo.load_as.side_effect = lambda asn: {
+        ASN(65536): AS(ASN(65536), None),
+        ASN(65537): AS(ASN(65537), Alpha2Code("MX")),
+        ASN(65538): AS(ASN(65538), Alpha2Code("US")),
+        ASN(65539): AS(ASN(65539), None),
+    }[asn]
+
+    ip_blocks = {
+        IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65536)),
+        IPBlock(IPPrefix("198.51.100.0/24"), Alpha2Code("CA"), ASN(65539)),
+    }
+
+    for block in ip_blocks:
+        as_weight_graph.add_ip_block(block)
+
+    assert (
+        service.execute(
+            ASPath([ASN(65536), ASN(65537), ASN(65538), ASN(65539)]),
+            as_weight_graph,
+            Alpha2Code("BR"),
+        ).items()
+        == {Alpha2Code("MX"): 2**8 * 2**8, Alpha2Code("US"): 2**8 * 2**8}.items()
+    )
+
+
+def test_when_path_country_appears_twice_it_adds_centrality_once(
+    as_repo: MagicMock, as_weight_graph: ASWeightGraph, service: CentralityUpdate
+) -> None:
+    as_repo.load_as.side_effect = lambda asn: {
+        ASN(65537): AS(ASN(65537), None),
+        ASN(65538): AS(ASN(65538), Alpha2Code("US")),
+        ASN(65539): AS(ASN(65539), Alpha2Code("US")),
+        ASN(65540): AS(ASN(65540), None),
+    }[asn]
+
+    ip_blocks = {
+        IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65537)),
+        IPBlock(IPPrefix("198.51.100.0/24"), Alpha2Code("CA"), ASN(65540)),
+    }
+
+    for block in ip_blocks:
+        as_weight_graph.add_ip_block(block)
+
+    assert (
+        service.execute(
+            ASPath([ASN(65537), ASN(65538), ASN(65539), ASN(65540)]),
+            as_weight_graph,
+            Alpha2Code("BR"),
+        ).items()
+        == {Alpha2Code("US"): 2**8 * 2**8}.items()
+    )
+
+
+def test_when_as_repo_raises_exception_it_does_not_add_centrality(
+    as_repo: MagicMock, as_weight_graph: ASWeightGraph, service: CentralityUpdate
+) -> None:
+    def as_map(asn: ASN) -> AS:
+        if asn == ASN(65537):
+            return AS(ASN(65537), None)
+        elif asn == ASN(65538):
+            raise KeyError()
+        else:
+            return AS(ASN(65539), None)
+
+    as_repo.load_as.side_effect = as_map
+
+    ip_blocks = {
+        IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65537)),
+        IPBlock(IPPrefix("198.51.100.0/24"), Alpha2Code("CA"), ASN(65539)),
+    }
+
+    for block in ip_blocks:
+        as_weight_graph.add_ip_block(block)
+
+    assert (
+        service.execute(
+            ASPath([ASN(65537), ASN(65538), ASN(65539)]),
+            as_weight_graph,
+            Alpha2Code("BR"),
+        ).items()
+        == {}.items()
+    )

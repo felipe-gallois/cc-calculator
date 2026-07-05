@@ -3,7 +3,7 @@
 import logging
 import os
 
-from cc_calc.app import CentralityCalculation, CentralityUpdate, CountryPathEstimation
+from cc_calc.app import CentralityCalculation, CentralityUpdate
 from cc_calc.core import Alpha2Code
 from cc_calc.db import (
     CaidaASOrgDB,
@@ -12,7 +12,7 @@ from cc_calc.db import (
     GeoLiteCountryDB,
     RouteViewsPrefixToASDB,
 )
-from cc_calc.repo import ASNRepo, ASRelGraphRepo, ASRepo, IPBlockRepo
+from cc_calc.repo import ASNRepo, ASRelGraphRepo, ASRepo, ASWeightGraphRepo, IPBlockRepo
 
 
 class CustomFormatter(logging.Formatter):
@@ -53,22 +53,12 @@ def setup_logging() -> None:
     root_logger.addHandler(handler)
 
 
-def build_ip_block_repository() -> IPBlockRepo:
+def build_centrality_calculation() -> CentralityCalculation:
     prefix_db = RouteViewsPrefixToASDB("data/routeviews-rv2-20251001-1200.pfx2as.gz")
     asn_db = GeoLiteASNDB("data/GeoLite2-ASN.mmdb")
     country_db = GeoLiteCountryDB("data/GeoLite2-Country.mmdb")
-    return IPBlockRepo(prefix_db, asn_db, country_db)
-
-
-def build_centrality_update(
-    ip_block_repo: IPBlockRepo, as_repo: ASRepo
-) -> CentralityUpdate:
-    country_path_estimation = CountryPathEstimation(as_repo)
-    return CentralityUpdate(country_path_estimation, ip_block_repo)
-
-
-def build_centrality_calculation() -> CentralityCalculation:
-    ip_block_repo = build_ip_block_repository()
+    ip_block_repo = IPBlockRepo(prefix_db, asn_db, country_db)
+    weight_graph_repo = ASWeightGraphRepo(prefix_db, asn_db, country_db)
 
     rel_graph_db = CaidaASRelDB("data/20251001.as-rel2.txt.bz2")
     rel_graph_repo = ASRelGraphRepo(rel_graph_db)
@@ -78,12 +68,13 @@ def build_centrality_calculation() -> CentralityCalculation:
     as_org_db = CaidaASOrgDB("data/20251001.as-org2info.txt.gz")
     as_repo = ASRepo(as_org_db)
 
-    centrality_update = build_centrality_update(ip_block_repo, as_repo)
+    centrality_update = CentralityUpdate(as_repo)
 
     return CentralityCalculation(
-        ip_block_repo,
         asn_repo,
         rel_graph_repo,
+        weight_graph_repo,
+        ip_block_repo,
         centrality_update,
         n_threads=os.cpu_count(),
     )
@@ -94,11 +85,12 @@ def main() -> None:
 
     centrality_calculation = build_centrality_calculation()
 
-    country = Alpha2Code("BR")
+    pivot = Alpha2Code("BR")
 
-    centralities = centrality_calculation.execute(country)
+    centralities = centrality_calculation.execute(pivot)
 
-    print(centralities.items())
+    for country, _ in centralities.items():
+        print(f"{country}: {centralities.get_normalized(country)}")
 
 
 if __name__ == "__main__":

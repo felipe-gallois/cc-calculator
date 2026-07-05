@@ -7,6 +7,7 @@ from cc_calc.core import (
     ASN,
     ASPath,
     ASRelGraph,
+    ASWeightGraph,
     CentralityTable,
     CountryCode,
     CountrySpecification,
@@ -15,6 +16,7 @@ from cc_calc.core import (
 from cc_calc.repo import (
     ASNRepo,
     ASRelGraphRepo,
+    ASWeightGraphRepo,
     InvalidDBDataFormat,
     IPBlockRepo,
     UnreachableDB,
@@ -26,15 +28,17 @@ class CentralityCalculation:
 
     def __init__(
         self,
-        ip_block_repo: IPBlockRepo,
         asn_repo: ASNRepo,
         rel_graph_repo: ASRelGraphRepo,
+        weight_graph_repo: ASWeightGraphRepo,
+        ip_block_repo: IPBlockRepo,
         centrality_update: CentralityUpdate,
         n_threads: int | None = None,
     ) -> None:
-        self._ip_block_repo = ip_block_repo
         self._asn_repo = asn_repo
         self._rel_graph_repo = rel_graph_repo
+        self._weight_graph_repo = weight_graph_repo
+        self._ip_block_repo = ip_block_repo
         self._centrality_update = centrality_update
         self._n_threads = n_threads if n_threads is not None else 1
 
@@ -47,12 +51,17 @@ class CentralityCalculation:
         world_asns = self._asn_repo.load_all_asns()
 
         rel_graph = self._rel_graph_repo.load_rel_graph()
+        weight_graph = self._weight_graph_repo.load_weight_graph()
 
         with ThreadPoolExecutor(max_workers=self._n_threads) as pool:
             results: list[CentralityTable] = list(
                 pool.map(
                     lambda src_asn: self._get_centrality_update(
-                        rel_graph.clone(), pivot_country, src_asn, world_asns
+                        rel_graph.clone(),
+                        weight_graph,
+                        pivot_country,
+                        src_asn,
+                        world_asns,
                     ),
                     list(country_asns),
                 )
@@ -77,6 +86,7 @@ class CentralityCalculation:
     def _get_centrality_update(
         self,
         rel_graph: ASRelGraph,
+        weight_graph: ASWeightGraph,
         pivot_country: CountryCode,
         src_as: ASN,
         world_asns: set[ASN],
@@ -87,7 +97,7 @@ class CentralityCalculation:
             try:
                 asn_path = self._get_as_path(rel_graph, src_as, dst_as)
                 centrality_update = self._centrality_update.execute(
-                    asn_path, pivot_country
+                    asn_path, weight_graph, pivot_country
                 )
                 centralities = centralities.combine(centrality_update)
             except (

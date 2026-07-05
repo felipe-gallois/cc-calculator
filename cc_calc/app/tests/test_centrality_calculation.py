@@ -10,13 +10,14 @@ from cc_calc.core import (
     Alpha2Code,
     ASPath,
     ASRelGraph,
+    ASWeightGraph,
     CentralityTable,
     CountryCode,
     CountrySpecification,
     IPBlock,
     IPPrefix,
 )
-from cc_calc.repo import ASNRepo, ASRelGraphRepo, IPBlockRepo
+from cc_calc.repo import ASNRepo, ASRelGraphRepo, ASWeightGraphRepo, IPBlockRepo
 
 DEFAULT_COUNTRY_BLOCKS = {
     IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65536))
@@ -136,9 +137,18 @@ def rel_graph_repo_mock(
 
 
 @pytest.fixture
+def weight_graph_repo_mock(mocker: MockerFixture) -> MagicMock:
+    weight_graph_mock = mocker.create_autospec(ASWeightGraphRepo)
+    weight_graph_mock.load_weight_graph.return_value = mocker.create_autospec(
+        ASWeightGraph
+    )
+    return weight_graph_mock
+
+
+@pytest.fixture
 def update_mock(mocker: MockerFixture, request: pytest.FixtureRequest) -> MagicMock:
     centrality_update = mocker.create_autospec(CentralityUpdate)
-    centrality_update.execute.side_effect = lambda as_path, _: request.param[as_path]
+    centrality_update.execute.side_effect = lambda as_path, *_: request.param[as_path]
     return centrality_update
 
 
@@ -153,16 +163,21 @@ def update_mock(mocker: MockerFixture, request: pytest.FixtureRequest) -> MagicM
     ],
 )
 def test_calculates_combined_centralities_of_src_and_dst_pairs(
-    ip_block_repo_mock: MagicMock,
+    exp_centralities: dict[CountryCode, int],
     asn_repo_mock: MagicMock,
     rel_graph_repo_mock: MagicMock,
+    weight_graph_repo_mock: MagicMock,
+    ip_block_repo_mock: MagicMock,
     update_mock: MagicMock,
-    exp_centralities: dict[CountryCode, int],
 ) -> None:
     pivot_country = Alpha2Code("BR")
 
     centrality_calculation = CentralityCalculation(
-        ip_block_repo_mock, asn_repo_mock, rel_graph_repo_mock, update_mock
+        asn_repo_mock,
+        rel_graph_repo_mock,
+        weight_graph_repo_mock,
+        ip_block_repo_mock,
+        update_mock,
     )
 
     centralities = centrality_calculation.execute(pivot_country)
@@ -182,13 +197,18 @@ def test_calculates_combined_centralities_of_src_and_dst_pairs(
 )
 def test_ip_block_repo_is_called_with_correct_specs(
     pivot_country: CountryCode,
-    ip_block_repo_mock: MagicMock,
     asn_repo_mock: MagicMock,
     rel_graph_repo_mock: MagicMock,
+    weight_graph_repo_mock: MagicMock,
+    ip_block_repo_mock: MagicMock,
     update_mock: MagicMock,
 ) -> None:
     centrality_calculation = CentralityCalculation(
-        ip_block_repo_mock, asn_repo_mock, rel_graph_repo_mock, update_mock
+        asn_repo_mock,
+        rel_graph_repo_mock,
+        weight_graph_repo_mock,
+        ip_block_repo_mock,
+        update_mock,
     )
 
     centrality_calculation.execute(pivot_country)

@@ -89,8 +89,16 @@ def main() -> None:
 
     centralities = centrality_calculation.execute(pivot)
 
-    for country, _ in centralities.items():
-        print(f"{country}: {centralities.get_normalized(country)}")
+    print(
+        sorted(
+            {
+                country: centralities.get_normalized(country)
+                for country, _ in centralities.items()
+            }.items(),
+            key=lambda item: item[1],
+            reverse=True,
+        )
+    )
 
 
 if __name__ == "__main__":

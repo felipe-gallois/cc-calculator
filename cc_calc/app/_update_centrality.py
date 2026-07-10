@@ -1,6 +1,7 @@
 import logging
 
 from cc_calc.core import (
+    Alpha2Code,
     ASN,
     ASPath,
     ASWeightGraph,
@@ -25,6 +26,10 @@ class CentralityUpdate:
 
         for dst_country, dst_weight in weight_graph.get_as_weights(path.end).items():
             total_weight = src_weight * dst_weight
+
+            update.add_global(total_weight)
+            update.add_excused(pivot, total_weight)
+            update.add_excused(dst_country, total_weight)
 
             for asn in path:
                 try:

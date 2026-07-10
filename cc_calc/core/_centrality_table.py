@@ -4,7 +4,7 @@ from collections.abc import ItemsView
 from copy import deepcopy
 from typing import Self
 
-from cc_calc.core._country_code import Alpha2Code, CountryCode
+from cc_calc.core._country_code import CountryCode
 
 
 class CentralityTable:

@@ -1,7 +1,6 @@
 import logging
 
 from cc_calc.core import (
-    Alpha2Code,
     ASN,
     ASPath,
     ASWeightGraph,

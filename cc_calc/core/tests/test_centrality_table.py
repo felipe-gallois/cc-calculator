@@ -200,3 +200,11 @@ def test_when_combined_it_sums_excused(
     new_counter = CentralityTable()
     combined = new_counter.combine(counter)
     assert combined.get_excused(Alpha2Code("BR")) == excused
+
+
+def test_when_country_centrality_increases_combined_global_centrality_is_zero(
+    counter: CentralityTable,
+) -> None:
+    new_counter = CentralityTable()
+    counter.add(Alpha2Code("BR"), 1)
+    assert new_counter.combine(counter).get_global() == 0

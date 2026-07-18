@@ -25,6 +25,7 @@ class CentralityUpdate:
 
         for dst_country, dst_weight in weight_graph.get_as_weights(path.end).items():
             total_weight = src_weight * dst_weight
+            updated_countries: set[CountryCode] = set()
 
             update.add_global(total_weight)
             update.add_excused(pivot, total_weight)
@@ -38,11 +39,10 @@ class CentralityUpdate:
                         asn_country is not None
                         and asn_country != pivot
                         and asn_country != dst_country
+                        and not asn_country in updated_countries
                     ):
-                        is_not_updated = update.get(asn_country) == 0
-
-                        if is_not_updated:
-                            update.add(asn_country, total_weight)
+                        update.add(asn_country, total_weight)
+                        updated_countries.add(asn_country)
                 except KeyError:
                     self.logger.warning(
                         "Skipping AS centrality update: AS{asn} is not in repository"

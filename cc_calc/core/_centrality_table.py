@@ -37,7 +37,7 @@ class CentralityTable:
         other_excused = other_table._excused_centrality
         new_table._excused_centrality.update(other_excused)
 
-        new_table._global_centrality += other_cc.total()
+        new_table._global_centrality += other_table._global_centrality
 
         return new_table
 

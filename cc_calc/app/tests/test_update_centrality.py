@@ -304,3 +304,32 @@ def test_when_path_country_is_dst_it_is_excused(
     )
 
     assert centralities.get_excused(Alpha2Code(dst_country)) == weight
+
+
+def test_when_country_intercepts_two_dst_blocks_it_gains_centrality_from_both(
+    as_repo: MagicMock,
+    as_weight_graph: ASWeightGraph,
+    service: CentralityUpdate,
+) -> None:
+    as_repo.load_as.side_effect = lambda asn: {
+        ASN(65536): AS(ASN(65536), Alpha2Code("BR")),
+        ASN(65537): AS(ASN(65537), Alpha2Code("US")),
+        ASN(65538): AS(ASN(65538), Alpha2Code("CA")),
+    }[asn]
+
+    ip_blocks = {
+        IPBlock(IPPrefix("192.0.2.0/24"), Alpha2Code("BR"), ASN(65536)),
+        IPBlock(IPPrefix("198.51.100.0/24"), Alpha2Code("CA"), ASN(65538)),
+        IPBlock(IPPrefix("203.0.113.0/24"), Alpha2Code("MX"), ASN(65538)),
+    }
+
+    for block in ip_blocks:
+        as_weight_graph.add_ip_block(block)
+
+    centralities = service.execute(
+        ASPath([ASN(65536), ASN(65537), ASN(65538)]),
+        as_weight_graph,
+        Alpha2Code("BR"),
+    )
+
+    assert centralities.get(Alpha2Code("US")) == 2**8 * 2**8 + 2**8 * 2**8

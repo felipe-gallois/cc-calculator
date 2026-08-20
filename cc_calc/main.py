@@ -1,5 +1,6 @@
 # TODO: create a proper main file
 
+import json
 import logging
 import os
 
@@ -54,18 +55,18 @@ def setup_logging() -> None:
 
 
 def build_centrality_calculation() -> CentralityCalculation:
-    prefix_db = RouteViewsPrefixToASDB("data/routeviews-rv2-20251001-1200.pfx2as.gz")
+    prefix_db = RouteViewsPrefixToASDB("data/routeviews-rv2-20260701-1200.pfx2as.gz")
     asn_db = GeoLiteASNDB("data/GeoLite2-ASN.mmdb")
     country_db = GeoLiteCountryDB("data/GeoLite2-Country.mmdb")
     ip_block_repo = IPBlockRepo(prefix_db, asn_db, country_db)
     weight_graph_repo = ASWeightGraphRepo(prefix_db, asn_db, country_db)
 
-    rel_graph_db = CaidaASRelDB("data/20251001.as-rel2.txt.bz2")
+    rel_graph_db = CaidaASRelDB("data/20260701.as-rel2.txt.bz2")
     rel_graph_repo = ASRelGraphRepo(rel_graph_db)
 
     asn_repo = ASNRepo(rel_graph_db)
 
-    as_org_db = CaidaASOrgDB("data/20251001.as-org2info.txt.gz")
+    as_org_db = CaidaASOrgDB("data/20260701.as-org2info.txt.gz")
     as_repo = ASRepo(as_org_db)
 
     centrality_update = CentralityUpdate(as_repo)
@@ -85,18 +86,22 @@ def main() -> None:
 
     centrality_calculation = build_centrality_calculation()
 
-    pivot = Alpha2Code("BR")
+    pivot = Alpha2Code("CN")
 
     centralities = centrality_calculation.execute(pivot)
 
     print(
-        sorted(
-            {
-                country: centralities.get_normalized(country)
+        json.dumps(
+            [
+                {
+                    "country": str(country),
+                    "centrality": centralities.get(country),
+                    "excused": centralities.get_excused(country),
+                    "global": centralities.get_global(),
+                    "normalized": centralities.get_normalized(country),
+                }
                 for country, _ in centralities.items()
-            }.items(),
-            key=lambda item: item[1],
-            reverse=True,
+            ]
         )
     )
 

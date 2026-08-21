@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import sys
 
 from cc_calc.app import CentralityCalculation, CentralityUpdate
 from cc_calc.core import Alpha2Code
@@ -86,7 +87,7 @@ def main() -> None:
 
     centrality_calculation = build_centrality_calculation()
 
-    pivot = Alpha2Code("CN")
+    pivot = Alpha2Code(sys.argv[1])
 
     centralities = centrality_calculation.execute(pivot)
 

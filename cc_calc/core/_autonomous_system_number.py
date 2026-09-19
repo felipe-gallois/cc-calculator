@@ -37,6 +37,9 @@ class ASN:
     def __hash__(self) -> int:
         return hash(self._number)
 
+    def __lt__(self, other: "ASN") -> bool:
+        return self._number < other._number
+
     def __copy__(self) -> Self:
         return self
 

@@ -91,8 +91,9 @@ def main() -> None:
     centrality_calculation = build_centrality_calculation()
 
     pivot = Alpha2Code(sys.argv[1])
+    percentage = float(sys.argv[2])
 
-    centralities = centrality_calculation.execute(pivot)
+    centralities = centrality_calculation.execute(pivot, percentage)
 
     print(
         json.dumps(

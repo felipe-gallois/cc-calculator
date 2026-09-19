@@ -1,5 +1,6 @@
 import functools
 import logging
+import random
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from tqdm import tqdm
@@ -44,12 +45,18 @@ class CentralityCalculation:
         self._centrality_update = centrality_update
         self._n_threads = n_threads if n_threads is not None else 1
 
-    def execute(self, pivot_country: CountryCode) -> CentralityTable:
+    def execute(self, pivot_country: CountryCode, percentage: float) -> CentralityTable:
         CentralityCalculation.logger.info(
             f"Calculating centralities for pivot country {pivot_country}"
         )
 
         country_asns = self._get_country_asns(pivot_country)
+
+        rng = random.Random(0)
+        country_asns = rng.sample(
+            sorted(country_asns), int(len(country_asns) * percentage)
+        )
+
         world_asns = self._asn_repo.load_all_asns()
 
         rel_graph = self._rel_graph_repo.load_rel_graph()

@@ -1,6 +1,8 @@
 import functools
 import logging
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from tqdm import tqdm
 
 from cc_calc.app._update_centrality import CentralityUpdate
 from cc_calc.core import (
@@ -54,18 +56,25 @@ class CentralityCalculation:
         weight_graph = self._weight_graph_repo.load_weight_graph()
 
         with ThreadPoolExecutor(max_workers=self._n_threads) as pool:
-            results: list[CentralityTable] = list(
-                pool.map(
-                    lambda src_asn: self._get_centrality_update(
-                        rel_graph.clone(),
-                        weight_graph,
-                        pivot_country,
-                        src_asn,
-                        world_asns,
-                    ),
-                    list(country_asns),
+            futures = [
+                pool.submit(
+                    self._get_centrality_update,
+                    rel_graph.clone(),
+                    weight_graph,
+                    pivot_country,
+                    src_asn,
+                    world_asns,
                 )
-            )
+                for src_asn in country_asns
+            ]
+
+            results = [
+                future.result()
+                for future in tqdm(
+                    as_completed(futures),
+                    total=len(futures),
+                )
+            ]
 
         return functools.reduce(CentralityTable.combine, results, CentralityTable())
 

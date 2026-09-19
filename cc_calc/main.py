@@ -54,6 +54,9 @@ def setup_logging() -> None:
     # Add handler globally
     root_logger.addHandler(handler)
 
+    # Disables logging
+    logging.disable(logging.CRITICAL)
+
 
 def build_centrality_calculation() -> CentralityCalculation:
     prefix_db = RouteViewsPrefixToASDB("data/routeviews-rv2-20260701-1200.pfx2as.gz")
